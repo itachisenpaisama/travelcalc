@@ -1,4 +1,4 @@
-const CACHE_NAME = 'travelcalc-v1';
+const CACHE_NAME = 'travelcalc-v2';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',

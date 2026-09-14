@@ -89,6 +89,9 @@
     setupSettingsEvents();
     setupInstallBanner();
 
+    // Ensure toast is hidden on load
+    elements.appToast.className = 'toast';
+
     // Populate UI
     renderProfilesList();
     applyActiveProfileToCalc();
