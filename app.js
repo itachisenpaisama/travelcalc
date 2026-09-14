@@ -18,6 +18,7 @@
     PROFILES: 'travelcalc_profiles_v1',
     ACTIVE_PROFILE: 'travelcalc_active_profile_id',
     SETTINGS: 'travelcalc_settings_v1',
+    SAVED_CALCULATIONS: 'travelcalc_saved_calculations',
   };
 
   const DEFAULT_PROFILES = [
@@ -70,6 +71,7 @@
     settings: { ...DEFAULT_SETTINGS },
     currentRouteDistanceKm: null,
     deferredInstallPrompt: null,
+    savedCalculations: [],
   };
 
   // DOM Elements cache
@@ -94,6 +96,7 @@
 
     // Populate UI
     renderProfilesList();
+    renderSavedCalculations();
     applyActiveProfileToCalc();
     renderSettingsView();
     calculateCosts(false); // Initial calculation
@@ -186,6 +189,23 @@
     elements.prefCurrency = document.getElementById('prefCurrency');
     elements.btnResetAllData = document.getElementById('btnResetAllData');
 
+    // Saved Calculations
+    elements.navSaved = document.getElementById('navSaved');
+    elements.btnSaveCalc = document.getElementById('btnSaveCalc');
+    elements.sortSavedSelect = document.getElementById('sortSavedSelect');
+    elements.savedCalculationsList = document.getElementById('savedCalculationsList');
+    
+    // Save Calc Modal
+    elements.saveCalcModalOverlay = document.getElementById('saveCalcModalOverlay');
+    elements.modalCalcName = document.getElementById('modalCalcName');
+    elements.modalCalcDate = document.getElementById('modalCalcDate');
+    elements.btnCancelCalcModal = document.getElementById('btnCancelCalcModal');
+    elements.btnConfirmSaveCalc = document.getElementById('btnConfirmSaveCalc');
+    elements.modalCalcId = document.getElementById('modalCalcId');
+
+    // Print Container
+    elements.printContainer = document.getElementById('printContainer');
+
     // Toast & Banner
     elements.appToast = document.getElementById('appToast');
     elements.toastIcon = document.getElementById('toastIcon');
@@ -227,7 +247,17 @@
         state.settings = { ...DEFAULT_SETTINGS };
       }
     } catch (e) {
-      state.settings = { ...DEFAULT_SETTINGS };
+      console.warn('Could not parse settings from storage');
+    }
+
+    // 4. Saved Calculations
+    try {
+      const storedSaved = localStorage.getItem(STORAGE_KEYS.SAVED_CALCULATIONS);
+      if (storedSaved) {
+        state.savedCalculations = JSON.parse(storedSaved);
+      }
+    } catch (e) {
+      console.warn('Could not parse saved calculations from storage');
     }
   }
 
@@ -237,6 +267,10 @@
 
   function saveSettings() {
     localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(state.settings));
+  }
+
+  function saveCalculationsToStorage() {
+    localStorage.setItem(STORAGE_KEYS.SAVED_CALCULATIONS, JSON.stringify(state.savedCalculations));
   }
 
   // ==========================================
@@ -313,6 +347,27 @@
     });
 
     elements.btnCopySummary.addEventListener('click', copySummaryToClipboard);
+
+    elements.btnSaveCalc.addEventListener('click', () => {
+      elements.modalCalcId.value = '';
+      elements.modalCalcName.value = '';
+      elements.modalCalcDate.value = new Date().toISOString().split('T')[0];
+      elements.saveCalcModalOverlay.classList.add('active');
+    });
+
+    elements.btnCancelCalcModal.addEventListener('click', () => {
+      elements.saveCalcModalOverlay.classList.remove('active');
+    });
+
+    elements.saveCalcModalOverlay.addEventListener('click', (e) => {
+      if (e.target === elements.saveCalcModalOverlay) {
+        elements.saveCalcModalOverlay.classList.remove('active');
+      }
+    });
+
+    elements.btnConfirmSaveCalc.addEventListener('click', saveCalculation);
+    elements.sortSavedSelect.addEventListener('change', renderSavedCalculations);
+
     elements.btnResetCalc.addEventListener('click', resetCalculator);
 
     elements.btnFetchFuel.addEventListener('click', openNearbyFuelRadar);
@@ -344,53 +399,59 @@
     }
   }
 
-  function calculateCosts(animateCounter = false) {
-    const cur = state.settings.currency || '€';
-
+  function getCurrentCalcData() {
     const distanceRaw = parseFloat(elements.inputDistance.value) || 0;
     const isRoundTrip = elements.toggleRoundTrip.checked;
     const effectiveDistance = isRoundTrip ? distanceRaw * 2 : distanceRaw;
-
     const consumption = parseFloat(elements.inputConsumption.value) || 0;
     const fuelPrice = parseFloat(elements.inputFuelPrice.value) || 0;
     const costPerKm = parseFloat(elements.inputCostPerKm.value) || 0;
     const flatThreshold = parseFloat(elements.inputFlatThreshold.value) || 0;
     const flatAmount = parseFloat(elements.inputFlatAmount.value) || 0;
 
+    const fuelCost = (effectiveDistance / 100) * consumption * fuelPrice;
+    const kmCharge = effectiveDistance * costPerKm;
+    const flatSurcharge = flatThreshold > 0 && effectiveDistance >= flatThreshold ? flatAmount : (flatThreshold === 0 ? flatAmount : 0);
+    const totalCost = fuelCost + kmCharge + flatSurcharge;
+    const cur = state.settings.currency || '€';
+
+    return {
+      distanceRaw, isRoundTrip, effectiveDistance, consumption, fuelPrice, 
+      costPerKm, flatThreshold, flatAmount, fuelCost, kmCharge, flatSurcharge, totalCost, cur
+    };
+  }
+
+  function calculateCosts(animateCounter = false) {
+    const data = getCurrentCalcData();
+    const cur = data.cur;
+
     // 1. Distance Breakdown
-    if (isRoundTrip) {
-      elements.resDistance.textContent = `${effectiveDistance.toFixed(1)} km`;
-      elements.resDistanceDetail.textContent = `2 × ${distanceRaw.toFixed(1)} km (Round Trip)`;
+    if (data.isRoundTrip) {
+      elements.resDistance.textContent = `${data.effectiveDistance.toFixed(1)} km`;
+      elements.resDistanceDetail.textContent = `2 × ${data.distanceRaw.toFixed(1)} km (Round Trip)`;
     } else {
-      elements.resDistance.textContent = `${effectiveDistance.toFixed(1)} km`;
-      elements.resDistanceDetail.textContent = `${distanceRaw.toFixed(1)} km one-way`;
+      elements.resDistance.textContent = `${data.effectiveDistance.toFixed(1)} km`;
+      elements.resDistanceDetail.textContent = `${data.distanceRaw.toFixed(1)} km one-way`;
     }
 
     // 2. Fuel Cost Breakdown
-    // Fuel needed (liters) = (distance / 100) * consumption
-    const fuelNeededLiters = (effectiveDistance / 100) * consumption;
-    const fuelCost = fuelNeededLiters * fuelPrice;
-
-    elements.resFuelCost.textContent = `${cur}${fuelCost.toFixed(2)}`;
-    elements.resFuelDetail.textContent = `${fuelNeededLiters.toFixed(2)} L needed (${consumption.toFixed(1)} L/100km @ ${cur}${fuelPrice.toFixed(3)}/L)`;
+    const fuelNeededLiters = (data.effectiveDistance / 100) * data.consumption;
+    elements.resFuelCost.textContent = `${cur}${data.fuelCost.toFixed(2)}`;
+    elements.resFuelDetail.textContent = `${fuelNeededLiters.toFixed(2)} L needed (${data.consumption.toFixed(1)} L/100km @ ${cur}${data.fuelPrice.toFixed(3)}/L)`;
 
     // 3. Distance Cost Breakdown
-    const kmCharge = effectiveDistance * costPerKm;
-    elements.resKmCost.textContent = `${cur}${kmCharge.toFixed(2)}`;
-    elements.resKmDetail.textContent = `${cur}${costPerKm.toFixed(2)} per km charge`;
+    elements.resKmCost.textContent = `${cur}${data.kmCharge.toFixed(2)}`;
+    elements.resKmDetail.textContent = `${cur}${data.costPerKm.toFixed(2)} per km charge`;
 
     // 4. Flat Rate Surcharge
-    let flatSurcharge = 0;
-    if (flatThreshold > 0 && effectiveDistance >= flatThreshold) {
-      flatSurcharge = flatAmount;
-      elements.resFlatCost.textContent = `${cur}${flatSurcharge.toFixed(2)}`;
-      elements.resFlatDetail.textContent = `Applied (dist. ≥ ${flatThreshold.toFixed(0)} km)`;
-    } else if (flatThreshold > 0) {
+    if (data.flatThreshold > 0 && data.effectiveDistance >= data.flatThreshold) {
+      elements.resFlatCost.textContent = `${cur}${data.flatSurcharge.toFixed(2)}`;
+      elements.resFlatDetail.textContent = `Applied (dist. ≥ ${data.flatThreshold.toFixed(0)} km)`;
+    } else if (data.flatThreshold > 0) {
       elements.resFlatCost.textContent = `${cur}0.00`;
-      elements.resFlatDetail.textContent = `Below threshold (${effectiveDistance.toFixed(1)} < ${flatThreshold.toFixed(0)} km)`;
-    } else if (flatAmount > 0) {
-      flatSurcharge = flatAmount;
-      elements.resFlatCost.textContent = `${cur}${flatSurcharge.toFixed(2)}`;
+      elements.resFlatDetail.textContent = `Below threshold (${data.effectiveDistance.toFixed(1)} < ${data.flatThreshold.toFixed(0)} km)`;
+    } else if (data.flatAmount > 0) {
+      elements.resFlatCost.textContent = `${cur}${data.flatSurcharge.toFixed(2)}`;
       elements.resFlatDetail.textContent = 'Flat fee applied';
     } else {
       elements.resFlatCost.textContent = `${cur}0.00`;
@@ -398,12 +459,10 @@
     }
 
     // 5. Total Cost
-    const totalCost = fuelCost + kmCharge + flatSurcharge;
-
     if (animateCounter) {
-      animateValue(elements.resTotalCost, totalCost, cur);
+      animateValue(elements.resTotalCost, data.totalCost, cur);
     } else {
-      elements.resTotalCost.textContent = `${cur}${totalCost.toFixed(2)}`;
+      elements.resTotalCost.textContent = `${cur}${data.totalCost.toFixed(2)}`;
     }
   }
 
@@ -429,29 +488,17 @@
   }
 
   function copySummaryToClipboard() {
-    const cur = state.settings.currency || '€';
-    const distanceRaw = parseFloat(elements.inputDistance.value) || 0;
-    const isRoundTrip = elements.toggleRoundTrip.checked;
-    const effectiveDistance = isRoundTrip ? distanceRaw * 2 : distanceRaw;
-    const consumption = parseFloat(elements.inputConsumption.value) || 0;
-    const fuelPrice = parseFloat(elements.inputFuelPrice.value) || 0;
-    const costPerKm = parseFloat(elements.inputCostPerKm.value) || 0;
-    const flatThreshold = parseFloat(elements.inputFlatThreshold.value) || 0;
-    const flatAmount = parseFloat(elements.inputFlatAmount.value) || 0;
-
-    const fuelCost = (effectiveDistance / 100) * consumption * fuelPrice;
-    const kmCharge = effectiveDistance * costPerKm;
-    const flatSurcharge = flatThreshold > 0 && effectiveDistance >= flatThreshold ? flatAmount : (flatThreshold === 0 ? flatAmount : 0);
-    const total = fuelCost + kmCharge + flatSurcharge;
+    const data = getCurrentCalcData();
+    const cur = data.cur;
 
     const summary = [
       `🚗 Travel Cost Calculation (${getActiveProfile().name}):`,
-      `• Distance: ${effectiveDistance.toFixed(1)} km ${isRoundTrip ? '(Round Trip)' : '(One-Way)'}`,
-      `• Fuel Cost: ${cur}${fuelCost.toFixed(2)} (${consumption.toFixed(1)} L/100km @ ${cur}${fuelPrice.toFixed(3)}/L)`,
-      `• Distance Charge: ${cur}${kmCharge.toFixed(2)} (${cur}${costPerKm.toFixed(2)}/km)`,
-      flatSurcharge > 0 ? `• Flat Rate Fee: ${cur}${flatSurcharge.toFixed(2)}` : null,
+      `• Distance: ${data.effectiveDistance.toFixed(1)} km ${data.isRoundTrip ? '(Round Trip)' : '(One-Way)'}`,
+      `• Fuel Cost: ${cur}${data.fuelCost.toFixed(2)} (${data.consumption.toFixed(1)} L/100km @ ${cur}${data.fuelPrice.toFixed(3)}/L)`,
+      `• Distance Charge: ${cur}${data.kmCharge.toFixed(2)} (${cur}${data.costPerKm.toFixed(2)}/km)`,
+      data.flatSurcharge > 0 ? `• Flat Rate Fee: ${cur}${data.flatSurcharge.toFixed(2)}` : null,
       `----------------------------------------`,
-      `💰 Total Travel Cost: ${cur}${total.toFixed(2)}`,
+      `💰 Total Travel Cost: ${cur}${data.totalCost.toFixed(2)}`,
     ]
       .filter(Boolean)
       .join('\n');
@@ -851,7 +898,151 @@
   }
 
   // ==========================================
-  // 7. PROFILES MANAGEMENT
+  // 7. SAVED CALCULATIONS LOGIC
+  // ==========================================
+  function saveCalculation() {
+    const name = elements.modalCalcName.value.trim() || 'Untitled Calculation';
+    const dateStr = elements.modalCalcDate.value || new Date().toISOString().split('T')[0];
+    const calcId = elements.modalCalcId.value;
+
+    const data = getCurrentCalcData();
+    const cur = data.cur;
+
+    if (calcId) {
+      // Edit existing
+      const existing = state.savedCalculations.find(c => c.id === calcId);
+      if (existing) {
+        existing.name = name;
+        existing.date = dateStr;
+      }
+      showToast('Calculation updated', 'success');
+    } else {
+      // New calculation
+      const newCalc = {
+        id: 'calc_' + Date.now().toString(),
+        name,
+        date: dateStr,
+        ...data,
+        profileName: getActiveProfile().name
+      };
+      state.savedCalculations.push(newCalc);
+      showToast('Calculation saved!', 'success');
+    }
+
+    saveCalculationsToStorage();
+    renderSavedCalculations();
+    elements.saveCalcModalOverlay.classList.remove('active');
+  }
+
+  function renderSavedCalculations() {
+    const list = elements.savedCalculationsList;
+    list.innerHTML = '';
+
+    if (state.savedCalculations.length === 0) {
+      list.innerHTML = '<div style="text-align: center; color: var(--text-muted); padding: 20px;">No saved calculations yet.</div>';
+      return;
+    }
+
+    const sortOpt = elements.sortSavedSelect.value;
+    const sorted = [...state.savedCalculations].sort((a, b) => {
+      if (sortOpt === 'date-desc') return new Date(b.date) - new Date(a.date);
+      if (sortOpt === 'date-asc') return new Date(a.date) - new Date(b.date);
+      if (sortOpt === 'name-asc') return a.name.localeCompare(b.name);
+      if (sortOpt === 'name-desc') return b.name.localeCompare(a.name);
+      return 0;
+    });
+
+    sorted.forEach((calc) => {
+      const card = document.createElement('div');
+      card.className = 'glass-card';
+      card.style.marginBottom = '12px';
+      
+      card.innerHTML = `
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
+          <div>
+            <div style="font-weight: 600; font-size: 1.05rem;">${calc.name}</div>
+            <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 4px;">📅 ${new Date(calc.date).toLocaleDateString()} • 🚗 ${calc.profileName}</div>
+          </div>
+          <div style="text-align: right;">
+            <div style="font-weight: 700; font-size: 1.1rem; color: var(--accent-primary);">${calc.cur}${calc.totalCost.toFixed(2)}</div>
+            <div style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 2px;">Total Cost</div>
+          </div>
+        </div>
+        
+        <div style="display: flex; gap: 12px; font-size: 0.85rem; color: var(--text-secondary); background: rgba(0,0,0,0.2); padding: 8px; border-radius: 4px; margin-bottom: 12px;">
+          <div>📏 ${calc.effectiveDistance.toFixed(1)} km</div>
+          <div>⛽ ${calc.cur}${calc.fuelCost.toFixed(2)}</div>
+          ${calc.flatSurcharge > 0 ? `<div>📦 ${calc.cur}${calc.flatSurcharge.toFixed(2)}</div>` : ''}
+        </div>
+
+        <div style="display: flex; gap: 8px; justify-content: flex-end;">
+          <button type="button" class="btn-secondary btn-small btn-print-calc" title="Print / PDF" style="flex: 1;">🖨️ Print / PDF</button>
+          <button type="button" class="btn-icon btn-edit btn-edit-calc" title="Edit">✏️</button>
+          <button type="button" class="btn-icon btn-danger btn-delete-calc" title="Delete">✕</button>
+        </div>
+      `;
+
+      card.querySelector('.btn-edit-calc').addEventListener('click', () => {
+        elements.modalCalcId.value = calc.id;
+        elements.modalCalcName.value = calc.name;
+        elements.modalCalcDate.value = calc.date;
+        elements.saveCalcModalOverlay.classList.add('active');
+      });
+
+      card.querySelector('.btn-delete-calc').addEventListener('click', () => {
+        state.savedCalculations = state.savedCalculations.filter(c => c.id !== calc.id);
+        saveCalculationsToStorage();
+        renderSavedCalculations();
+        showToast('Calculation deleted', 'success');
+      });
+
+      card.querySelector('.btn-print-calc').addEventListener('click', () => {
+        printCalculation(calc);
+      });
+
+      list.appendChild(card);
+    });
+  }
+
+  function printCalculation(calc) {
+    const cur = calc.cur;
+    elements.printContainer.innerHTML = `
+      <div style="padding: 40px; font-family: sans-serif; max-width: 800px; margin: 0 auto; color: #000;">
+        <h1 style="border-bottom: 2px solid #ccc; padding-bottom: 10px;">TravelCalc: Trip Expense Report</h1>
+        <h2>${calc.name}</h2>
+        <p><strong>Date:</strong> ${new Date(calc.date).toLocaleDateString()}</p>
+        <p><strong>Vehicle Profile:</strong> ${calc.profileName}</p>
+        
+        <table style="width: 100%; border-collapse: collapse; margin-top: 30px;">
+          <tr style="border-bottom: 1px solid #eee;">
+            <td style="padding: 10px 0;"><strong>Total Distance</strong></td>
+            <td style="padding: 10px 0; text-align: right;">${calc.effectiveDistance.toFixed(1)} km ${calc.isRoundTrip ? '(Round Trip)' : '(One-Way)'}</td>
+          </tr>
+          <tr style="border-bottom: 1px solid #eee;">
+            <td style="padding: 10px 0;"><strong>Fuel Cost</strong> (${calc.consumption.toFixed(1)} L/100km @ ${cur}${calc.fuelPrice.toFixed(3)}/L)</td>
+            <td style="padding: 10px 0; text-align: right;">${cur}${calc.fuelCost.toFixed(2)}</td>
+          </tr>
+          <tr style="border-bottom: 1px solid #eee;">
+            <td style="padding: 10px 0;"><strong>Distance Charge</strong> (${cur}${calc.costPerKm.toFixed(2)}/km)</td>
+            <td style="padding: 10px 0; text-align: right;">${cur}${calc.kmCharge.toFixed(2)}</td>
+          </tr>
+          ${calc.flatSurcharge > 0 ? `
+          <tr style="border-bottom: 1px solid #eee;">
+            <td style="padding: 10px 0;"><strong>Flat Rate Fee</strong></td>
+            <td style="padding: 10px 0; text-align: right;">${cur}${calc.flatSurcharge.toFixed(2)}</td>
+          </tr>` : ''}
+          <tr style="border-top: 2px solid #333;">
+            <td style="padding: 15px 0; font-size: 1.2rem;"><strong>Total Estimated Cost</strong></td>
+            <td style="padding: 15px 0; text-align: right; font-size: 1.2rem;"><strong>${cur}${calc.totalCost.toFixed(2)}</strong></td>
+          </tr>
+        </table>
+      </div>
+    `;
+    window.print();
+  }
+
+  // ==========================================
+  // 8. PROFILES MANAGEMENT
   // ==========================================
   function setupProfileEvents() {
     elements.btnOpenNewProfileModal.addEventListener('click', () => {
@@ -1052,7 +1243,7 @@
   }
 
   // ==========================================
-  // 8. SETTINGS & PREFERENCES
+  // 9. SETTINGS & PREFERENCES
   // ==========================================
   function setupSettingsEvents() {
     // Maps key
@@ -1123,18 +1314,9 @@
 
     // Reset all data
     elements.btnResetAllData.addEventListener('click', () => {
-      if (confirm('Are you sure you want to reset all profiles and settings to default?')) {
+      if (confirm('Are you sure you want to delete all profiles, saved calculations, and settings? This cannot be undone.')) {
         localStorage.clear();
-        state.profiles = [...DEFAULT_PROFILES];
-        state.activeProfileId = state.profiles[0].id;
-        state.settings = { ...DEFAULT_SETTINGS };
-        saveProfiles();
-        saveSettings();
-        renderProfilesList();
-        renderSettingsView();
-        applyActiveProfileToCalc();
-        calculateCosts(false);
-        showToast('All app data has been reset', 'success');
+        location.reload();
       }
     });
   }
@@ -1166,7 +1348,7 @@
   }
 
   // ==========================================
-  // 9. PWA INSTALL BANNER & SERVICE WORKER
+  // 10. PWA INSTALL BANNER & SERVICE WORKER
   // ==========================================
   function registerServiceWorker() {
     if ('serviceWorker' in navigator) {
@@ -1216,7 +1398,7 @@
   }
 
   // ==========================================
-  // 10. TOAST NOTIFICATIONS
+  // 11. TOAST NOTIFICATIONS
   // ==========================================
   let toastTimer = null;
   function showToast(message, type = 'success') {

@@ -198,9 +198,12 @@
             <div class="result-row__value" id="resTotalCost">€0.00</div>
           </div>
 
-          <div style="display: flex; gap: 8px; margin-top: 16px;">
+          <div style="display: flex; gap: 8px; margin-top: 16px; flex-wrap: wrap;">
+            <button type="button" class="btn-secondary" id="btnSaveCalc" style="flex: 1; border-color: rgba(0, 232, 143, 0.3); color: var(--accent-secondary);">
+              💾 Save
+            </button>
             <button type="button" class="btn-secondary" id="btnCopySummary" style="flex: 1;">
-              📋 Copy Summary
+              📋 Copy
             </button>
             <button type="button" class="btn-secondary" id="btnResetCalc" style="width: auto; padding: 0 16px;">
               🔄 Reset
@@ -426,11 +429,38 @@
         </button>
       </div>
 
+      </div>
+
       <!-- App Information -->
       <div class="app-info">
         <p><strong>Travel Cost Calculator PWA v1.0</strong></p>
         <p>Progressive Web Application for Android & Desktop</p>
         <p>Data stored locally in your browser sandbox.</p>
+      </div>
+    </section>
+
+    <!-- ==================== VIEW 5: SAVED CALCULATIONS ==================== -->
+    <section class="view" id="view-saved">
+      <h1 class="section-title">Saved Calculations</h1>
+      <p class="section-subtitle">History of your trips and expenses</p>
+
+      <div class="glass-card" style="margin-bottom: 20px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+          <div class="glass-card__title" style="margin-bottom: 0;">
+            <div class="glass-card__title-icon flat">🗂️</div>
+            <span>History</span>
+          </div>
+          <select id="sortSavedSelect" class="form-select" style="width: auto; height: 32px; padding: 0 10px; font-size: 0.8rem;">
+            <option value="date-desc">Newest First</option>
+            <option value="date-asc">Oldest First</option>
+            <option value="name-asc">Name (A-Z)</option>
+            <option value="name-desc">Name (Z-A)</option>
+          </select>
+        </div>
+
+        <div id="savedCalculationsList">
+          <!-- Saved calculations will be injected here -->
+        </div>
       </div>
     </section>
 
@@ -449,6 +479,10 @@
     <button type="button" class="bottom-nav__item" data-view="profiles" id="navProfiles">
       <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
       <span>Profiles</span>
+    </button>
+    <button type="button" class="bottom-nav__item" data-view="saved" id="navSaved">
+      <svg viewBox="0 0 24 24"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg>
+      <span>Saved</span>
     </button>
     <button type="button" class="bottom-nav__item" data-view="settings" id="navSettings">
       <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
@@ -514,6 +548,31 @@
     </div>
   </div>
 
+  <!-- ==================== MODAL: SAVE/EDIT CALCULATION ==================== -->
+  <div class="modal-overlay" id="saveCalcModalOverlay">
+    <div class="modal">
+      <div class="modal__handle"></div>
+      <h2 class="modal__title" id="saveCalcModalTitle">Save Calculation</h2>
+      
+      <input type="hidden" id="modalCalcId">
+
+      <div class="form-group">
+        <label class="form-label" for="modalCalcName">Calculation Name</label>
+        <input type="text" id="modalCalcName" class="form-input" placeholder="e.g. Summer Road Trip">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="modalCalcDate">Date</label>
+        <input type="date" id="modalCalcDate" class="form-input">
+      </div>
+
+      <div class="modal__footer">
+        <button type="button" class="btn-secondary" id="btnCancelCalcModal">Cancel</button>
+        <button type="button" class="btn-primary" id="btnConfirmSaveCalc">Save</button>
+      </div>
+    </div>
+  </div>
+
   <!-- ==================== MODAL: NEARBY GAS STATIONS ==================== -->
   <div class="modal-overlay" id="stationsModalOverlay">
     <div class="modal">
@@ -532,6 +591,9 @@
       </div>
     </div>
   </div>
+
+  <!-- ==================== PRINT CONTAINER ==================== -->
+  <div id="printContainer" class="print-only"></div>
 
   <!-- ==================== TOAST ==================== -->
   <div class="toast" id="appToast">
