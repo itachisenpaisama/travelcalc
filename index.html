@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Travel Cost Calculator — Smart Trip Expense & Fuel Estimation</title>
+  <meta name="description" content="Quickly calculate travel and trip driving costs. Accurate fuel expenses, flat rates, per-kilometer charges, multiple vehicle profiles, and real-time gas prices.">
+  <meta name="theme-color" content="#0b0f1a">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="TravelCalc">
+
+  <!-- Manifest & Icons -->
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+
+  <!-- Typography: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Top App Header -->
+  <header class="app-header">
+    <div class="app-header__logo" id="headerLogo">
+      <div class="app-header__logo-icon">🚗</div>
+      <span>TravelCalc</span>
+    </div>
+    <button class="app-header__profile-badge" id="activeProfileBadge" title="Click to switch profile">
+      <div class="app-header__profile-dot"></div>
+      <span id="activeProfileBadgeName">Default Car</span>
+    </button>
+  </header>
+
+  <!-- Main Views Container -->
+  <main class="app-content">
+
+    <!-- ==================== VIEW 1: CALCULATOR ==================== -->
+    <section class="view active" id="view-calculator">
+      <h1 class="section-title">Trip Calculator</h1>
+      <p class="section-subtitle">Calculate total travel costs with partial breakdowns</p>
+
+      <!-- Distance Card -->
+      <div class="glass-card">
+        <div class="glass-card__title">
+          <div class="glass-card__title-icon route">📏</div>
+          <span>Distance & Route</span>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="inputDistance">Trip Distance</label>
+          <div class="form-input-group">
+            <input type="number" id="inputDistance" class="form-input" placeholder="e.g. 75" step="0.1" min="0" inputmode="decimal">
+            <span class="form-input-group__suffix">km</span>
+          </div>
+        </div>
+
+        <div class="toggle-row">
+          <div class="toggle-row__label">Round Trip (Return Journey)</div>
+          <label class="toggle-switch">
+            <input type="checkbox" id="toggleRoundTrip">
+            <span class="toggle-switch__slider"></span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Fuel & Consumption Card -->
+      <div class="glass-card">
+        <div class="glass-card__title">
+          <div class="glass-card__title-icon fuel">⛽</div>
+          <span>Fuel & Consumption</span>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="inputConsumption">Avg. Consumption</label>
+            <div class="form-input-group">
+              <input type="number" id="inputConsumption" class="form-input" placeholder="6.5" step="0.1" min="0" inputmode="decimal">
+              <span class="form-input-group__suffix">L/100km</span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="inputFuelPrice">Fuel Price</label>
+            <div class="form-input-group">
+              <input type="number" id="inputFuelPrice" class="form-input" placeholder="1.75" step="0.001" min="0" inputmode="decimal">
+              <span class="form-input-group__suffix">€/L</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Live Fuel Price Button -->
+        <div class="fetch-fuel-section">
+          <button type="button" class="fetch-fuel-btn" id="btnFetchFuel">
+            <span id="btnFetchFuelIcon">🔄</span>
+            <span id="btnFetchFuelText">Get Live Fuel Prices Nearby</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Surcharges & Extra Costs Card -->
+      <div class="glass-card">
+        <div class="glass-card__title">
+          <div class="glass-card__title-icon flat">📦</div>
+          <span>Surcharges & Rates</span>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="inputCostPerKm">Cost Per Kilometer</label>
+          <div class="form-input-group">
+            <input type="number" id="inputCostPerKm" class="form-input" placeholder="0.30" step="0.01" min="0" inputmode="decimal">
+            <span class="form-input-group__suffix">€/km</span>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="inputFlatThreshold">Flat Rate Min Distance</label>
+            <div class="form-input-group">
+              <input type="number" id="inputFlatThreshold" class="form-input" placeholder="50" step="1" min="0" inputmode="numeric">
+              <span class="form-input-group__suffix">km</span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="inputFlatAmount">Flat Rate Surcharge</label>
+            <div class="form-input-group">
+              <input type="number" id="inputFlatAmount" class="form-input" placeholder="15.00" step="0.50" min="0" inputmode="decimal">
+              <span class="form-input-group__suffix">€</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Button -->
+      <button type="button" class="btn-primary" id="btnCalculate">
+        Calculate Total Cost
+      </button>
+
+      <!-- Calculation Results Panel -->
+      <div class="results-panel" id="resultsPanel">
+        <div class="glass-card">
+          <div class="glass-card__title">
+            <div class="glass-card__title-icon cost">📊</div>
+            <span>Cost Breakdown</span>
+          </div>
+
+          <div class="result-row">
+            <div class="result-row__left">
+              <span class="result-row__icon">🛣️</span>
+              <div>
+                <div class="result-row__label">Total Distance</div>
+                <div class="result-row__detail" id="resDistanceDetail">0 km one-way</div>
+              </div>
+            </div>
+            <div class="result-row__value" id="resDistance">0.0 km</div>
+          </div>
+
+          <div class="result-row">
+            <div class="result-row__left">
+              <span class="result-row__icon">⛽</span>
+              <div>
+                <div class="result-row__label">Fuel Cost</div>
+                <div class="result-row__detail" id="resFuelDetail">0.00 L needed</div>
+              </div>
+            </div>
+            <div class="result-row__value" id="resFuelCost">€0.00</div>
+          </div>
+
+          <div class="result-row">
+            <div class="result-row__left">
+              <span class="result-row__icon">📏</span>
+              <div>
+                <div class="result-row__label">Distance Charge</div>
+                <div class="result-row__detail" id="resKmDetail">€0.00 / km</div>
+              </div>
+            </div>
+            <div class="result-row__value" id="resKmCost">€0.00</div>
+          </div>
+
+          <div class="result-row">
+            <div class="result-row__left">
+              <span class="result-row__icon">📦</span>
+              <div>
+                <div class="result-row__label">Flat Rate Fee</div>
+                <div class="result-row__detail" id="resFlatDetail">Threshold not reached</div>
+              </div>
+            </div>
+            <div class="result-row__value" id="resFlatCost">€0.00</div>
+          </div>
+
+          <div class="result-row total">
+            <div class="result-row__label">Total Estimated Cost</div>
+            <div class="result-row__value" id="resTotalCost">€0.00</div>
+          </div>
+
+          <div style="display: flex; gap: 8px; margin-top: 16px;">
+            <button type="button" class="btn-secondary" id="btnCopySummary" style="flex: 1;">
+              📋 Copy Summary
+            </button>
+            <button type="button" class="btn-secondary" id="btnResetCalc" style="width: auto; padding: 0 16px;">
+              🔄 Reset
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== VIEW 2: ROUTE PLANNER ==================== -->
+    <section class="view" id="view-route">
+      <h1 class="section-title">Route Distance</h1>
+      <p class="section-subtitle">Enter start & destination to determine route distance automatically</p>
+
+      <div class="glass-card">
+        <div class="glass-card__title">
+          <div class="glass-card__title-icon route">📍</div>
+          <span>Trip Locations</span>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="routeOrigin">Starting Point (Origin)</label>
+          <div class="form-input-group">
+            <input type="text" id="routeOrigin" class="form-input" placeholder="e.g. Frankfurt Hauptbahnhof or City">
+            <button type="button" class="form-input-group__btn" id="btnCurrentLocation" title="Use current GPS location">🎯</button>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="routeDestination">Destination</label>
+          <div class="form-input-group">
+            <input type="text" id="routeDestination" class="form-input" placeholder="e.g. Cologne Cathedral, Berlin, Munich">
+          </div>
+        </div>
+
+        <button type="button" class="btn-primary" id="btnCalculateRoute">
+          🔍 Find Distance & Route
+        </button>
+
+        <!-- Route Results Display -->
+        <div id="routeResultsCard" class="hidden" style="margin-top: 20px;">
+          <div class="route-info-bar">
+            <div class="route-info-chip">
+              <div class="route-info-chip__value" id="routeDistanceValue">0 km</div>
+              <div class="route-info-chip__label">Driving Distance</div>
+            </div>
+            <div class="route-info-chip">
+              <div class="route-info-chip__value" id="routeDurationValue">0 min</div>
+              <div class="route-info-chip__label">Est. Travel Time</div>
+            </div>
+          </div>
+
+          <div style="margin-top: 14px; display: flex; gap: 8px;">
+            <button type="button" class="btn-primary" id="btnApplyRouteToCalc" style="margin-top: 0; flex: 1;">
+              ⚡ Apply Distance & Calculate Costs
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Maps Sync Info Card -->
+      <div class="glass-card" style="margin-top: 14px;">
+        <div class="glass-card__title">
+          <div class="glass-card__title-icon cost">ℹ️</div>
+          <span>Routing & Google Maps Sync</span>
+        </div>
+        <p style="font-size: 0.82rem; color: var(--text-secondary); line-height: 1.5;">
+          This app can utilize high-precision routing via <strong>Google Maps Distance Matrix</strong>. If no Google API key is configured yet, the app provides smart routing calculations automatically via open geospatial routing so you can start right away!
+        </p>
+        <button type="button" class="btn-secondary btn-small" id="btnOpenMapsSettings" style="margin-top: 12px;">
+          ⚙️ Configure Google Maps API Key
+        </button>
+      </div>
+    </section>
+
+    <!-- ==================== VIEW 3: PROFILES ==================== -->
+    <section class="view" id="view-profiles">
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
+        <h1 class="section-title" style="margin-bottom: 0;">Vehicle Profiles</h1>
+        <button type="button" class="btn-primary btn-small" id="btnOpenNewProfileModal" style="margin-top: 0;">
+          + New Profile
+        </button>
+      </div>
+      <p class="section-subtitle">Save vehicle presets and rates for instant calculation</p>
+
+      <div class="profiles-grid" id="profilesListContainer">
+        <!-- Injected via JavaScript -->
+      </div>
+    </section>
+
+    <!-- ==================== VIEW 4: SETTINGS ==================== -->
+    <section class="view" id="view-settings">
+      <h1 class="section-title">Settings & APIs</h1>
+      <p class="section-subtitle">Configure external services, defaults and data preferences</p>
+
+      <!-- APIs Group -->
+      <div class="settings-group">
+        <div class="settings-group__title">External Synchronizations</div>
+
+        <div class="settings-item">
+          <div class="settings-item__left">
+            <span class="settings-item__icon">🗺️</span>
+            <div>
+              <div class="settings-item__label">Google Maps API</div>
+              <div class="settings-item__sublabel">For addresses & driving distance</div>
+            </div>
+          </div>
+          <div class="settings-item__right">
+            <span class="api-key-status missing" id="googleMapsStatus">Not configured</span>
+          </div>
+        </div>
+
+        <div class="glass-card" style="margin-top: 6px; border-radius: 4px 4px var(--radius-md) var(--radius-md); padding: 14px;">
+          <label class="form-label" for="settingGoogleMapsKey">Google Maps API Key</label>
+          <div class="form-input-group">
+            <input type="password" id="settingGoogleMapsKey" class="form-input" placeholder="Paste your AIzaSy... key">
+            <button type="button" class="form-input-group__btn" id="btnToggleMapsKeyVisibility">👁️</button>
+          </div>
+          <div style="display: flex; gap: 8px; margin-top: 10px;">
+            <button type="button" class="btn-secondary btn-small" id="btnSaveMapsKey">Save Key</button>
+            <button type="button" class="btn-secondary btn-small" id="btnClearMapsKey">Clear</button>
+          </div>
+        </div>
+
+        <div class="settings-item" style="margin-top: 12px;">
+          <div class="settings-item__left">
+            <span class="settings-item__icon">⛽</span>
+            <div>
+              <div class="settings-item__label">Tankerkönig API</div>
+              <div class="settings-item__sublabel">Real-time gas station prices in Germany</div>
+            </div>
+          </div>
+          <div class="settings-item__right">
+            <span class="api-key-status missing" id="tankerkoenigStatus">Demo mode</span>
+          </div>
+        </div>
+
+        <div class="glass-card" style="margin-top: 6px; border-radius: 4px 4px var(--radius-md) var(--radius-md); padding: 14px;">
+          <label class="form-label" for="settingTankerkoenigKey">Tankerkönig API Key (UUID)</label>
+          <div class="form-input-group">
+            <input type="password" id="settingTankerkoenigKey" class="form-input" placeholder="e.g. 00000000-0000-0000-0000-000000000002">
+            <button type="button" class="form-input-group__btn" id="btnToggleTankerKeyVisibility">👁️</button>
+          </div>
+          <div style="display: flex; gap: 8px; margin-top: 10px;">
+            <button type="button" class="btn-secondary btn-small" id="btnSaveTankerKey">Save Key</button>
+            <button type="button" class="btn-secondary btn-small" id="btnClearTankerKey">Clear</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- App Preferences -->
+      <div class="settings-group">
+        <div class="settings-group__title">Preferences</div>
+
+        <div class="settings-item">
+          <div class="settings-item__left">
+            <span class="settings-item__icon">⛽</span>
+            <div>
+              <div class="settings-item__label">Default Fuel Type</div>
+              <div class="settings-item__sublabel">Preferred fuel grade for radar</div>
+            </div>
+          </div>
+          <div class="settings-item__right" style="width: 140px;">
+            <select id="prefFuelType" class="form-select" style="height: 38px; font-size: 0.85rem;">
+              <option value="e5">Super E5</option>
+              <option value="e10">Super E10</option>
+              <option value="diesel">Diesel</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="settings-item">
+          <div class="settings-item__left">
+            <span class="settings-item__icon">💶</span>
+            <div>
+              <div class="settings-item__label">Currency</div>
+              <div class="settings-item__sublabel">Symbol used in calculations</div>
+            </div>
+          </div>
+          <div class="settings-item__right" style="width: 100px;">
+            <select id="prefCurrency" class="form-select" style="height: 38px; font-size: 0.85rem;">
+              <option value="€">EUR (€)</option>
+              <option value="$">USD ($)</option>
+              <option value="CHF">CHF</option>
+              <option value="£">GBP (£)</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Data Management -->
+      <div class="settings-group">
+        <div class="settings-group__title">Data Management</div>
+        <button type="button" class="btn-secondary btn-danger" id="btnResetAllData">
+          🗑️ Reset All Profiles & Settings
+        </button>
+      </div>
+
+      <!-- App Information -->
+      <div class="app-info">
+        <p><strong>Travel Cost Calculator PWA v1.0</strong></p>
+        <p>Progressive Web Application for Android & Desktop</p>
+        <p>Data stored locally in your browser sandbox.</p>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ==================== BOTTOM NAVIGATION ==================== -->
+  <nav class="bottom-nav">
+    <button type="button" class="bottom-nav__item active" data-view="calculator" id="navCalculator">
+      <svg viewBox="0 0 24 24"><rect x="4" y="2" width="16" height="20" rx="3"></rect><line x1="8" y1="6" x2="16" y2="6"></line><line x1="16" y1="14" x2="16" y2="18"></line><line x1="8" y1="10" x2="8.01" y2="10"></line><line x1="12" y1="10" x2="12.01" y2="10"></line><line x1="16" y1="10" x2="16.01" y2="10"></line><line x1="8" y1="14" x2="8.01" y2="14"></line><line x1="12" y1="14" x2="12.01" y2="14"></line><line x1="8" y1="18" x2="8.01" y2="18"></line><line x1="12" y1="18" x2="12.01" y2="18"></line></svg>
+      <span>Calculate</span>
+    </button>
+    <button type="button" class="bottom-nav__item" data-view="route" id="navRoute">
+      <svg viewBox="0 0 24 24"><polygon points="3 11 22 2 13 21 11 13 3 11"></polygon></svg>
+      <span>Route</span>
+    </button>
+    <button type="button" class="bottom-nav__item" data-view="profiles" id="navProfiles">
+      <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+      <span>Profiles</span>
+    </button>
+    <button type="button" class="bottom-nav__item" data-view="settings" id="navSettings">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+      <span>Settings</span>
+    </button>
+  </nav>
+
+  <!-- ==================== MODAL: PROFILE CREATE/EDIT ==================== -->
+  <div class="modal-overlay" id="profileModalOverlay">
+    <div class="modal">
+      <div class="modal__handle"></div>
+      <h2 class="modal__title" id="profileModalTitle">Add Vehicle Profile</h2>
+
+      <input type="hidden" id="modalProfileId">
+
+      <div class="form-group">
+        <label class="form-label" for="modalProfileName">Profile Name</label>
+        <input type="text" id="modalProfileName" class="form-input" placeholder="e.g. My Commuter Car">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="modalProfileVehicle">Vehicle Model / Description</label>
+        <input type="text" id="modalProfileVehicle" class="form-input" placeholder="e.g. VW Golf 2.0 TDI">
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label" for="modalProfileConsumption">Consumption (L/100km)</label>
+          <input type="number" id="modalProfileConsumption" class="form-input" placeholder="6.2" step="0.1" min="0" inputmode="decimal">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="modalProfileFuelType">Fuel Type</label>
+          <select id="modalProfileFuelType" class="form-select">
+            <option value="e5">Super E5</option>
+            <option value="e10">Super E10</option>
+            <option value="diesel">Diesel</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="modalProfileCostPerKm">Cost Per Kilometer (€/km)</label>
+        <input type="number" id="modalProfileCostPerKm" class="form-input" placeholder="0.30" step="0.01" min="0" inputmode="decimal">
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label" for="modalProfileFlatThreshold">Flat Rate Min (km)</label>
+          <input type="number" id="modalProfileFlatThreshold" class="form-input" placeholder="50" step="1" min="0" inputmode="numeric">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="modalProfileFlatAmount">Flat Rate Surcharge (€)</label>
+          <input type="number" id="modalProfileFlatAmount" class="form-input" placeholder="15.00" step="0.5" min="0" inputmode="decimal">
+        </div>
+      </div>
+
+      <div class="modal__footer">
+        <button type="button" class="btn-secondary" id="btnCancelProfileModal">Cancel</button>
+        <button type="button" class="btn-primary" id="btnSaveProfileModal">Save Profile</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL: NEARBY GAS STATIONS ==================== -->
+  <div class="modal-overlay" id="stationsModalOverlay">
+    <div class="modal">
+      <div class="modal__handle"></div>
+      <h2 class="modal__title">Nearby Gas Stations & Prices</h2>
+      <p style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 12px;">
+        Tap any station to adopt its current price into your calculation:
+      </p>
+
+      <div id="stationsListContainer" class="station-list">
+        <!-- Stations injected here -->
+      </div>
+
+      <div class="modal__footer">
+        <button type="button" class="btn-secondary" id="btnCloseStationsModal">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== TOAST ==================== -->
+  <div class="toast" id="appToast">
+    <span id="toastIcon">✓</span>
+    <span id="toastMessage">Action completed</span>
+  </div>
+
+  <!-- ==================== INSTALL BANNER ==================== -->
+  <div class="install-banner" id="installBanner">
+    <div class="install-banner__icon">📱</div>
+    <div class="install-banner__text">
+      <div class="install-banner__title">Install TravelCalc App</div>
+      <div class="install-banner__subtitle">Add to Home Screen for fast offline access</div>
+    </div>
+    <button type="button" class="install-banner__install" id="btnInstallPwa">Install</button>
+    <button type="button" class="install-banner__close" id="btnCloseInstallBanner">&times;</button>
+  </div>
+
+  <!-- Application Logic -->
+  <script src="app.js"></script>
+</body>
+</html>
