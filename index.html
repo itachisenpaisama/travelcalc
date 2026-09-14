@@ -323,6 +323,20 @@
             <button type="button" class="btn-secondary btn-small" id="btnSaveMapsKey">Save Key</button>
             <button type="button" class="btn-secondary btn-small" id="btnClearMapsKey">Clear</button>
           </div>
+
+          <!-- Google Maps Setup Guide -->
+          <details class="api-guide" id="googleMapsGuide">
+            <summary class="api-guide__toggle">📖 How to get a Google Maps API Key</summary>
+            <div class="api-guide__content">
+              <div class="api-guide__step"><span class="api-guide__step-num">1</span> Go to the <a href="https://console.cloud.google.com/apis/credentials" target="_blank" rel="noopener">Google Cloud Console → Credentials</a></div>
+              <div class="api-guide__step"><span class="api-guide__step-num">2</span> Create a project (or select an existing one)</div>
+              <div class="api-guide__step"><span class="api-guide__step-num">3</span> Click <strong>"+ Create Credentials"</strong> → <strong>"API Key"</strong></div>
+              <div class="api-guide__step"><span class="api-guide__step-num">4</span> Enable the <strong>Distance Matrix API</strong> and <strong>Places API</strong> in <a href="https://console.cloud.google.com/apis/library" target="_blank" rel="noopener">API Library</a></div>
+              <div class="api-guide__step"><span class="api-guide__step-num">5</span> Copy the key and paste it above</div>
+              <div class="api-guide__note">💡 Google gives $200/month free credit (~40,000 route lookups). No charges unless you exceed that.</div>
+              <div class="api-guide__note">ℹ️ <strong>Optional:</strong> The app already uses free open routing (OSRM) without this key. Google Maps provides more accurate results for complex addresses.</div>
+            </div>
+          </details>
         </div>
 
         <div class="settings-item" style="margin-top: 12px;">
@@ -344,10 +358,23 @@
             <input type="password" id="settingTankerkoenigKey" class="form-input" placeholder="e.g. 00000000-0000-0000-0000-000000000002">
             <button type="button" class="form-input-group__btn" id="btnToggleTankerKeyVisibility">👁️</button>
           </div>
-          <div style="display: flex; gap: 8px; margin-top: 10px;">
+          <div style="display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap;">
             <button type="button" class="btn-secondary btn-small" id="btnSaveTankerKey">Save Key</button>
             <button type="button" class="btn-secondary btn-small" id="btnClearTankerKey">Clear</button>
+            <button type="button" class="btn-secondary btn-small" id="btnUseDemoTankerKey" style="margin-left: auto; border-color: rgba(0, 232, 143, 0.3); color: var(--accent-secondary);">⚡ Use Demo Key</button>
           </div>
+
+          <!-- Tankerkönig Setup Guide -->
+          <details class="api-guide" id="tankerkoenigGuide">
+            <summary class="api-guide__toggle">📖 How to get a Tankerkönig API Key</summary>
+            <div class="api-guide__content">
+              <div class="api-guide__step"><span class="api-guide__step-num">1</span> Go to <a href="https://creativecommons.tankerkoenig.de/" target="_blank" rel="noopener">creativecommons.tankerkoenig.de</a></div>
+              <div class="api-guide__step"><span class="api-guide__step-num">2</span> Click <strong>"API-Key anfordern"</strong> (Request API Key)</div>
+              <div class="api-guide__step"><span class="api-guide__step-num">3</span> Enter your email and a short usage description</div>
+              <div class="api-guide__step"><span class="api-guide__step-num">4</span> You'll receive a UUID key by email — paste it above</div>
+              <div class="api-guide__note">💡 100% free, no credit card needed. Or click <strong>"Use Demo Key"</strong> above to try it instantly with the public test key.</div>
+            </div>
+          </details>
         </div>
       </div>
 

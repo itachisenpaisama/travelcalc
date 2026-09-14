@@ -180,6 +180,7 @@
     elements.btnToggleTankerKeyVisibility = document.getElementById('btnToggleTankerKeyVisibility');
     elements.btnSaveTankerKey = document.getElementById('btnSaveTankerKey');
     elements.btnClearTankerKey = document.getElementById('btnClearTankerKey');
+    elements.btnUseDemoTankerKey = document.getElementById('btnUseDemoTankerKey');
 
     elements.prefFuelType = document.getElementById('prefFuelType');
     elements.prefCurrency = document.getElementById('prefCurrency');
@@ -1094,6 +1095,16 @@
       saveSettings();
       renderSettingsView();
       showToast('Tankerkönig key cleared', 'success');
+    });
+
+    // Demo key shortcut
+    elements.btnUseDemoTankerKey.addEventListener('click', () => {
+      const demoKey = '00000000-0000-0000-0000-000000000002';
+      elements.settingTankerkoenigKey.value = demoKey;
+      state.settings.tankerkoenigApiKey = demoKey;
+      saveSettings();
+      renderSettingsView();
+      showToast('Demo key activated! Try "Get Live Fuel Prices" now ⛽', 'success');
     });
 
     // Preferences
