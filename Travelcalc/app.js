@@ -1,13 +1,225 @@
 /**
  * TravelCalc — Minimalistisches Fahrtenbuch & Fahrtkosten-Abrechnung
- * Swiss / Fintech Design & Architecture
+ * Mobile-First & Android PWA optimiert (Bilingual: DE / EN)
  */
 
 (function () {
   'use strict';
 
   // ==========================================================================
-  // 1. KONSTANTEN & STORAGE KEYS
+  // 1. I18N DICTIONARIES (DE / EN)
+  // ==========================================================================
+  const I18N = {
+    de: {
+      brand: 'TravelCalc',
+      tourDetailsTitle: 'Kunde & Tourdetails',
+      optionalHint: 'Optional für Buchhaltung',
+      customerLabel: 'Kunde / Schüler / Firma',
+      customerPlaceholder: 'z. B. Max Mustermann, Firma ABC...',
+      dateLabel: 'Datum',
+      tourNameLabel: 'Tourbezeichnung / Anlass',
+      tourNamePlaceholder: 'z. B. Nachhilfe, Kundenbesuch...',
+      tripDistanceTitle: 'Fahrtstrecke',
+      routeCalcToggle: 'Start/Ziel eingeben',
+      routeCalcToggleClose: 'Schließen',
+      originLabel: 'Startpunkt',
+      destinationLabel: 'Zielort',
+      originPlaceholder: 'z. B. Dietzenbach oder Zuhause',
+      destPlaceholder: 'z. B. Frankfurt oder Kunde...',
+      btnCalcDist: 'Distanz berechnen',
+      distanceOneWayLabel: 'Distanz (einfache Fahrt)',
+      roundTripTitle: 'Hin- & Rückfahrt',
+      roundTripSubOneWay: 'Einfach',
+      roundTripSubDouble: 'Hin- & Rückfahrt',
+      ratesTitle: 'Kilometerabrechnung & Pauschalen',
+      costPerKmLabel: 'Kilometerpauschale (pro km)',
+      tieredPricingTitle: 'Gestaffelte Entfernungspauschale',
+      tieredPricingSub: 'Zusatzpauschale nach erreichten Kilometern',
+      btnAddTier: 'Weitere Stufe hinzufügen',
+      tierFrom: 'Ab',
+      activeTierNone: 'Keine Stufe erreicht',
+      activeTierReached: 'Aktiv: Stufe ab {km} km (+{cur}{amt})',
+      fuelCardTitle: 'Kraftstoff & Verbrauch (Optional)',
+      consumptionLabel: 'Durchschnittsverbrauch',
+      fuelPriceLabel: 'Spritpreis',
+      btnFuelRadar: 'Live-Spritpreis Radar öffnen',
+      calculatedCostTitle: 'Kalkulierte Fahrtkosten',
+      totalCostLabel: 'Gesamtbetrag der Tour',
+      distanceDetailLabel: 'Gefahrene Strecke:',
+      kmCostLabel: 'Kilometerpauschale:',
+      tieredCostLabel: 'Gestaffelte Pauschale:',
+      fuelCostLabel: 'Kraftstoffanteil:',
+      btnSaveLogbook: 'Tour im Fahrtenbuch speichern',
+      btnCopy: 'Kopieren',
+      btnReset: 'Neu',
+      accountingTitle: 'Fahrtenbuch & Buchhaltung',
+      accountingSubtitle: 'Monatsordner, Statistiken und Belege für deine Kundenabrechnung',
+      btnPrintMonth: 'Monatsbericht (PDF)',
+      kpiTotalDistLabel: 'Gesamte Strecke',
+      kpiTotalSumLabel: 'Gesamtbetrag',
+      kpiSurchargesLabel: 'Pauschalen',
+      kpiSurchargesMeta: 'Km-Satz + Staffeln',
+      kpiFuelLabel: 'Kraftstoff',
+      customerSummaryTitle: 'Kundenübersicht des Monats',
+      customerFilterHint: 'Klick zum Filtern',
+      customerFilterActive: 'Gefiltert: {name} (Klick zum Aufheben)',
+      searchPlaceholder: 'Nach Kunde oder Tour suchen...',
+      placesRoutesTitle: 'Gespeicherte Orte & Routen',
+      placesRoutesSubtitle: 'Wiederkehrende Kunden und Standardstrecken für sekundenschnelle Auswahl',
+      placesTitle: 'Häufige Orte',
+      btnAddPlace: 'Ort hinzufügen',
+      routesTitle: 'Standard-Touren & Routen',
+      btnAddRoute: 'Route speichern',
+      profilesTitle: 'Fahrzeug-Profile',
+      profilesSubtitle: 'Verbrauch, Kilometerpauschalen und Standard-Staffeln pro Fahrzeug',
+      btnAddProfile: 'Neues Fahrzeug',
+      settingsTitle: 'Einstellungen',
+      settingsSubtitle: 'Sprache, Einheiten, optionale APIs und Datensicherung',
+      generalSettingsTitle: 'Allgemeine Einstellungen',
+      currencyLabel: 'Währung',
+      fuelTypePrefLabel: 'Kraftstoffsorte',
+      apisTitle: 'APIs & Schnittstellen (Optional)',
+      apiHelpText: 'Die App funktioniert standardmäßig vollständig ohne eigene API-Keys (über freies OpenStreetMap-Routing und Durchschnittspreise).',
+      backupTitle: 'Datensicherung & Fahrtenbuch-Export',
+      btnBackupExport: 'Backup herunterladen (JSON)',
+      btnBackupImport: 'Backup einspielen',
+      btnResetAll: 'Alle Daten zurücksetzen',
+      appInfoText: 'Optimiert für Android & Play Store PWA. Alle Daten bleiben lokal auf deinem Gerät gespeichert.',
+      navCalc: 'Rechner',
+      navAccounting: 'Fahrtenbuch',
+      navRoutes: 'Orte & Routen',
+      navProfiles: 'Fahrzeuge',
+      navSettings: 'Optionen',
+      btnSave: 'Speichern',
+      btnCancel: 'Abbrechen',
+      btnClear: 'Löschen',
+      btnClose: 'Schließen',
+      loadRoutePlaceholder: 'Route laden / Vorlage wählen...',
+      selectPlacePlaceholder: 'Ort wählen...',
+      editTourModalTitle: 'Tour bearbeiten',
+      placeModalTitle: 'Ort speichern',
+      routeModalTitle: 'Route speichern',
+      profileModalTitle: 'Fahrzeug anlegen',
+      fuelStationsTitle: 'Spritpreise in der Nähe',
+      fuelStationsHelp: 'Klicke auf eine Tankstelle, um den Literpreis direkt zu übernehmen:',
+      roundTripDefaultLabel: 'Standardmäßig Hin- & Rückfahrt',
+      placeNameLabel: 'Bezeichnung',
+      placeAddressLabel: 'Adresse / Stadt',
+      routeNameLabel: 'Routenname',
+      profileNameLabel: 'Profilname',
+      vehicleModelLabel: 'Fahrzeugmodell',
+      distanceKmLabel: 'Strecke (km)',
+      allTours: 'Alle Touren',
+      trips: 'Fahrten',
+      trip: 'Fahrt',
+    },
+    en: {
+      brand: 'TravelCalc',
+      tourDetailsTitle: 'Customer & Trip Details',
+      optionalHint: 'Optional for bookkeeping',
+      customerLabel: 'Customer / Student / Client',
+      customerPlaceholder: 'e.g. John Doe, Company XYZ...',
+      dateLabel: 'Date',
+      tourNameLabel: 'Trip Description / Purpose',
+      tourNamePlaceholder: 'e.g. Tutoring session, Client visit...',
+      tripDistanceTitle: 'Trip Distance',
+      routeCalcToggle: 'Enter Start/Dest',
+      routeCalcToggleClose: 'Close',
+      originLabel: 'Starting Point',
+      destinationLabel: 'Destination',
+      originPlaceholder: 'e.g. Home or City Center',
+      destPlaceholder: 'e.g. Client address, Airport...',
+      btnCalcDist: 'Calculate Distance',
+      distanceOneWayLabel: 'Distance (one-way)',
+      roundTripTitle: 'Round Trip (Return Journey)',
+      roundTripSubOneWay: 'One-way',
+      roundTripSubDouble: 'Round trip',
+      ratesTitle: 'Mileage Rates & Surcharges',
+      costPerKmLabel: 'Cost per kilometer (rate/km)',
+      tieredPricingTitle: 'Tiered Distance Surcharge',
+      tieredPricingSub: 'Extra flat rates when reaching certain kilometers',
+      btnAddTier: 'Add another tier',
+      tierFrom: 'From',
+      activeTierNone: 'No tier threshold reached',
+      activeTierReached: 'Active: Tier from {km} km (+{cur}{amt})',
+      fuelCardTitle: 'Fuel & Consumption (Optional)',
+      consumptionLabel: 'Avg. Fuel Consumption',
+      fuelPriceLabel: 'Fuel Price',
+      btnFuelRadar: 'Open Live Gas Station Radar',
+      calculatedCostTitle: 'Calculated Travel Cost',
+      totalCostLabel: 'Total Trip Amount',
+      distanceDetailLabel: 'Total Distance:',
+      kmCostLabel: 'Mileage Charge:',
+      tieredCostLabel: 'Tiered Surcharge:',
+      fuelCostLabel: 'Fuel Cost:',
+      btnSaveLogbook: 'Save Trip to Logbook',
+      btnCopy: 'Copy',
+      btnReset: 'Reset',
+      accountingTitle: 'Logbook & Accounting',
+      accountingSubtitle: 'Monthly folders, stats, and receipts for your client billing',
+      btnPrintMonth: 'Monthly Report (PDF)',
+      kpiTotalDistLabel: 'Total Distance',
+      kpiTotalSumLabel: 'Total Amount',
+      kpiSurchargesLabel: 'Surcharges',
+      kpiSurchargesMeta: 'Per km + Tiers',
+      kpiFuelLabel: 'Fuel Cost',
+      customerSummaryTitle: 'Monthly Customer Summary',
+      customerFilterHint: 'Click to filter',
+      customerFilterActive: 'Filtered: {name} (Click to reset)',
+      searchPlaceholder: 'Search by client or trip...',
+      placesRoutesTitle: 'Saved Places & Routes',
+      placesRoutesSubtitle: 'Frequent clients and standard routes for 1-click selection',
+      placesTitle: 'Frequent Locations',
+      btnAddPlace: 'Add Location',
+      routesTitle: 'Standard Routes & Trips',
+      btnAddRoute: 'Save Route',
+      profilesTitle: 'Vehicle Profiles',
+      profilesSubtitle: 'Consumption, mileage rates, and standard tiers per vehicle',
+      btnAddProfile: 'New Vehicle',
+      settingsTitle: 'Settings',
+      settingsSubtitle: 'Language, units, optional APIs, and data backups',
+      generalSettingsTitle: 'General Preferences',
+      currencyLabel: 'Currency',
+      fuelTypePrefLabel: 'Preferred Fuel Grade',
+      apisTitle: 'APIs & Services (Optional)',
+      apiHelpText: 'The app works completely out of the box without API keys (using free OpenStreetMap routing and market averages).',
+      backupTitle: 'Data Backup & Export',
+      btnBackupExport: 'Download Backup (JSON)',
+      btnBackupImport: 'Restore Backup',
+      btnResetAll: 'Reset All Data',
+      appInfoText: 'Optimized for Android & Play Store PWA. All data stays stored locally on your device.',
+      navCalc: 'Calculate',
+      navAccounting: 'Logbook',
+      navRoutes: 'Places & Routes',
+      navProfiles: 'Vehicles',
+      navSettings: 'Settings',
+      btnSave: 'Save',
+      btnCancel: 'Cancel',
+      btnClear: 'Clear',
+      btnClose: 'Close',
+      loadRoutePlaceholder: 'Load route / Choose preset...',
+      selectPlacePlaceholder: 'Choose location...',
+      editTourModalTitle: 'Edit Trip',
+      placeModalTitle: 'Save Location',
+      routeModalTitle: 'Save Route',
+      profileModalTitle: 'Add Vehicle',
+      fuelStationsTitle: 'Nearby Gas Stations',
+      fuelStationsHelp: 'Tap any station to adopt its current price into the calculation:',
+      roundTripDefaultLabel: 'Default to round trip',
+      placeNameLabel: 'Name',
+      placeAddressLabel: 'Address / City',
+      routeNameLabel: 'Route Name',
+      profileNameLabel: 'Profile Name',
+      vehicleModelLabel: 'Vehicle Model',
+      distanceKmLabel: 'Distance (km)',
+      allTours: 'All Trips',
+      trips: 'Trips',
+      trip: 'Trip',
+    },
+  };
+
+  // ==========================================================================
+  // 2. CONSTANTS & STORAGE KEYS
   // ==========================================================================
   const STORAGE_KEYS = {
     PROFILES: 'travelcalc_profiles_v2',
@@ -16,7 +228,7 @@
     TOURS: 'travelcalc_tours_v2',
     PLACES: 'travelcalc_places_v1',
     ROUTES: 'travelcalc_saved_routes_v1',
-    // Legacy key for migration:
+    LANG: 'travelcalc_language_v1',
     LEGACY_SAVED: 'travelcalc_saved_calculations',
   };
 
@@ -29,8 +241,8 @@
   const DEFAULT_PROFILES = [
     {
       id: 'prof-1',
-      name: 'Haupt-PKW',
-      vehicle: 'Kompaktklasse / Limousine',
+      name: 'PKW (Standard)',
+      vehicle: 'Kompaktklasse',
       consumption: 6.2,
       fuelType: 'e10',
       costPerKm: 0.30,
@@ -59,7 +271,7 @@
 
   const DEFAULT_PLACES = [
     { id: 'place-home', name: 'Zuhause', address: 'Dietzenbach' },
-    { id: 'place-office', name: 'Büro / Praxis', address: 'Frankfurt am Main' },
+    { id: 'place-office', name: 'Büro / Schule', address: 'Frankfurt am Main' },
   ];
 
   const DEFAULT_SETTINGS = {
@@ -70,16 +282,16 @@
   };
 
   // ==========================================================================
-  // 2. STATE
+  // 3. STATE
   // ==========================================================================
   let state = {
+    lang: 'de',
     profiles: [],
     activeProfileId: '',
     settings: { ...DEFAULT_SETTINGS },
     tours: [],
     places: [],
     savedRoutes: [],
-    // Active filters in accounting
     selectedMonth: 'all',
     selectedCustomer: '',
     searchQuery: '',
@@ -88,13 +300,23 @@
 
   const elements = {};
 
+  function t(key, vars = {}) {
+    const dict = I18N[state.lang] || I18N.de;
+    let text = dict[key] || I18N.de[key] || key;
+    Object.keys(vars).forEach((v) => {
+      text = text.replace(new RegExp(`\\{${v}\\}`, 'g'), vars[v]);
+    });
+    return text;
+  }
+
   // ==========================================================================
-  // 3. INITIALISIERUNG
+  // 4. INITIALIZATION
   // ==========================================================================
   function init() {
     cacheDom();
     loadState();
     registerServiceWorker();
+    setupLanguageSwitcher();
     setupNavigation();
     setupCalculator();
     setupAccounting();
@@ -103,23 +325,24 @@
     setupSettings();
     setupCollapsibles();
 
-    // Default dates
     const today = new Date().toISOString().split('T')[0];
     if (elements.inputTourDate) elements.inputTourDate.value = today;
 
-    // Apply active vehicle profile to calculator
+    applyLanguageToDOM();
     applyActiveProfileToCalc();
     renderAllViews();
     calculateCosts(false);
   }
 
   function cacheDom() {
-    // Navigation
+    // Navigation & Header
     elements.navButtons = document.querySelectorAll('.bottom-nav__item');
     elements.views = document.querySelectorAll('.view');
     elements.headerLogo = document.getElementById('headerLogo');
     elements.activeProfileBadge = document.getElementById('activeProfileBadge');
     elements.activeProfileBadgeName = document.getElementById('activeProfileBadgeName');
+    elements.langDe = document.getElementById('langDe');
+    elements.langEn = document.getElementById('langEn');
 
     // Calculator inputs
     elements.quickRouteSelect = document.getElementById('quickRouteSelect');
@@ -132,6 +355,7 @@
     elements.toggleRoundTrip = document.getElementById('toggleRoundTrip');
     elements.roundTripBadge = document.getElementById('roundTripBadge');
     elements.inputCostPerKm = document.getElementById('inputCostPerKm');
+    elements.costPerKmSuffix = document.getElementById('costPerKmSuffix');
     elements.toggleTieredPricing = document.getElementById('toggleTieredPricing');
     elements.tieredPricingContent = document.getElementById('tieredPricingContent');
     elements.tiersListContainer = document.getElementById('tiersListContainer');
@@ -158,6 +382,7 @@
     elements.fuelSummaryMini = document.getElementById('fuelSummaryMini');
     elements.inputConsumption = document.getElementById('inputConsumption');
     elements.inputFuelPrice = document.getElementById('inputFuelPrice');
+    elements.fuelPriceSuffix = document.getElementById('fuelPriceSuffix');
     elements.btnFetchFuel = document.getElementById('btnFetchFuel');
 
     // Results elements
@@ -271,10 +496,62 @@
   }
 
   // ==========================================================================
-  // 4. STORAGE & MIGRATION
+  // 5. I18N SYSTEM (DE / EN SWITCHING)
+  // ==========================================================================
+  function setupLanguageSwitcher() {
+    elements.langDe.addEventListener('click', () => setLanguage('de'));
+    elements.langEn.addEventListener('click', () => setLanguage('en'));
+  }
+
+  function setLanguage(lang) {
+    if (lang !== 'de' && lang !== 'en') return;
+    state.lang = lang;
+    localStorage.setItem(STORAGE_KEYS.LANG, lang);
+    applyLanguageToDOM();
+    calculateCosts(false);
+    renderAllViews();
+    showToast(lang === 'de' ? 'Sprache auf Deutsch geändert' : 'Language switched to English', 'success');
+  }
+
+  function applyLanguageToDOM() {
+    // Update toggle buttons active state
+    elements.langDe.classList.toggle('active', state.lang === 'de');
+    elements.langEn.classList.toggle('active', state.lang === 'en');
+    document.documentElement.lang = state.lang;
+
+    // Update all data-i18n elements
+    document.querySelectorAll('[data-i18n]').forEach((el) => {
+      const key = el.getAttribute('data-i18n');
+      if (key) el.textContent = t(key);
+    });
+
+    // Placeholders
+    if (elements.inputCustomer) elements.inputCustomer.placeholder = t('customerPlaceholder');
+    if (elements.inputTourName) elements.inputTourName.placeholder = t('tourNamePlaceholder');
+    if (elements.routeOrigin) elements.routeOrigin.placeholder = t('originPlaceholder');
+    if (elements.routeDestination) elements.routeDestination.placeholder = t('destPlaceholder');
+    if (elements.searchToursInput) elements.searchToursInput.placeholder = t('searchPlaceholder');
+
+    // Suffixes
+    const cur = state.settings.currency || '€';
+    if (elements.costPerKmSuffix) elements.costPerKmSuffix.textContent = `${cur} / km`;
+    if (elements.fuelPriceSuffix) elements.fuelPriceSuffix.textContent = `${cur} / L`;
+
+    updateQuickRouteSelect();
+    updatePlaceSelectDropdowns();
+  }
+
+  // ==========================================================================
+  // 6. STORAGE & MIGRATION
   // ==========================================================================
   function loadState() {
-    // 1. Settings
+    // Language
+    const storedLang = localStorage.getItem(STORAGE_KEYS.LANG);
+    if (storedLang === 'de' || storedLang === 'en') {
+      state.lang = storedLang;
+    }
+
+    // Settings
     try {
       const storedSettings = localStorage.getItem(STORAGE_KEYS.SETTINGS);
       if (storedSettings) state.settings = { ...DEFAULT_SETTINGS, ...JSON.parse(storedSettings) };
@@ -282,7 +559,7 @@
       console.warn('Error loading settings', e);
     }
 
-    // 2. Profiles
+    // Profiles
     try {
       const storedProfiles = localStorage.getItem(STORAGE_KEYS.PROFILES);
       if (storedProfiles) {
@@ -295,7 +572,6 @@
       state.profiles = [...DEFAULT_PROFILES];
     }
 
-    // Active Profile
     const storedActiveId = localStorage.getItem(STORAGE_KEYS.ACTIVE_PROFILE);
     if (storedActiveId && state.profiles.some((p) => p.id === storedActiveId)) {
       state.activeProfileId = storedActiveId;
@@ -303,7 +579,7 @@
       state.activeProfileId = state.profiles[0]?.id || 'prof-1';
     }
 
-    // 3. Places (Orte)
+    // Places
     try {
       const storedPlaces = localStorage.getItem(STORAGE_KEYS.PLACES);
       if (storedPlaces) {
@@ -316,7 +592,7 @@
       state.places = [...DEFAULT_PLACES];
     }
 
-    // 4. Saved Routes
+    // Saved Routes
     try {
       const storedRoutes = localStorage.getItem(STORAGE_KEYS.ROUTES);
       if (storedRoutes) {
@@ -337,13 +613,12 @@
       state.savedRoutes = [];
     }
 
-    // 5. Tours (with migration from legacy saved calculations)
+    // Tours (with migration)
     try {
       const storedTours = localStorage.getItem(STORAGE_KEYS.TOURS);
       if (storedTours) {
         state.tours = JSON.parse(storedTours);
       } else {
-        // Check for legacy calculations to migrate
         const legacyData = localStorage.getItem(STORAGE_KEYS.LEGACY_SAVED);
         if (legacyData) {
           const oldList = JSON.parse(legacyData);
@@ -397,7 +672,7 @@
   }
 
   // ==========================================================================
-  // 5. NAVIGATION & VIEWS
+  // 7. NAVIGATION & VIEWS
   // ==========================================================================
   function setupNavigation() {
     elements.navButtons.forEach((btn) => {
@@ -434,27 +709,22 @@
   }
 
   function setupCollapsibles() {
-    // Fuel Card Collapsible
     elements.fuelHeaderTrigger.addEventListener('click', () => {
       elements.cardFuel.classList.toggle('open');
     });
 
-    // API Card Collapsible
     elements.apiHeaderTrigger.addEventListener('click', () => {
       elements.cardApis.classList.toggle('open');
     });
 
-    // Expandable Route Planner
     elements.btnToggleRoutePlanner.addEventListener('click', () => {
       const isHidden = elements.routeFinderBox.classList.toggle('hidden');
-      elements.toggleRoutePlannerText.textContent = isHidden
-        ? 'Route berechnen (Start / Ziel)'
-        : 'Routenplaner schließen';
+      elements.toggleRoutePlannerText.textContent = isHidden ? t('routeCalcToggle') : t('routeCalcToggleClose');
     });
   }
 
   // ==========================================================================
-  // 6. CALCULATOR & TIERED PRICING ENGINE
+  // 8. CALCULATOR & FLUID TIERED PRICING
   // ==========================================================================
   function setupCalculator() {
     const inputs = [
@@ -496,7 +766,6 @@
     elements.btnResetCalc.addEventListener('click', resetCalculator);
     elements.btnFetchFuel.addEventListener('click', openNearbyFuelRadar);
 
-    // Quick route dropdown selection
     elements.quickRouteSelect.addEventListener('change', (e) => {
       const routeId = e.target.value;
       if (!routeId) return;
@@ -508,11 +777,10 @@
         elements.toggleRoundTrip.checked = !!route.isRoundTrip;
         updateRoundTripBadge();
         calculateCosts(true);
-        showToast(`Route "${route.name}" geladen! 🚗`, 'success');
+        showToast(state.lang === 'de' ? `Route "${route.name}" geladen!` : `Loaded route "${route.name}"!`, 'success');
       }
     });
 
-    // Setup route planner buttons
     elements.btnCurrentLocation.addEventListener('click', fetchUserOriginLocation);
     elements.btnCalcRouteDist.addEventListener('click', calculateRouteFinderDistance);
 
@@ -536,7 +804,6 @@
     elements.inputConsumption.value = active.consumption || '';
     elements.inputCostPerKm.value = active.costPerKm !== undefined ? active.costPerKm : 0.30;
 
-    // Load profile tiers or default
     if (Array.isArray(active.tiers) && active.tiers.length > 0) {
       state.currentTiers = JSON.parse(JSON.stringify(active.tiers));
     } else {
@@ -547,7 +814,6 @@
     elements.tieredPricingContent.style.opacity = elements.toggleTieredPricing.checked ? '1' : '0.4';
     elements.tieredPricingContent.style.pointerEvents = elements.toggleTieredPricing.checked ? 'auto' : 'none';
 
-    // Fuel price default suggestion based on grade
     if (!elements.inputFuelPrice.value) {
       elements.inputFuelPrice.value = active.fuelType === 'diesel' ? '1.639' : '1.729';
     }
@@ -558,10 +824,11 @@
     updateCustomerDatalist();
   }
 
+  // Fluid, non-overflowing tier cards
   function renderTiersList() {
     elements.tiersListContainer.innerHTML = '';
-    // Sort tiers by minKm
     state.currentTiers.sort((a, b) => a.minKm - b.minKm);
+    const cur = state.settings.currency || '€';
 
     state.currentTiers.forEach((tier, index) => {
       const row = document.createElement('div');
@@ -569,17 +836,19 @@
       row.id = `tier-row-${index}`;
 
       row.innerHTML = `
-        <span class="tier-row__tag">Stufe ${index + 1}:</span>
-        <span class="tier-row__unit">ab</span>
-        <input type="number" class="tier-row__input tier-km-input" value="${tier.minKm}" min="0" step="1">
-        <span class="tier-row__unit">km</span>
+        <div class="tier-row__left">
+          <span class="tier-row__label">${t('tierFrom')}</span>
+          <input type="number" class="tier-row__input tier-km-input" value="${tier.minKm}" min="0" step="1">
+          <span class="tier-row__unit">km</span>
+        </div>
         <span class="tier-row__arrow">➔</span>
-        <input type="number" class="tier-row__input tier-amt-input" value="${tier.amount.toFixed(2)}" min="0" step="0.5">
-        <span class="tier-row__unit">${state.settings.currency || '€'}</span>
-        ${state.currentTiers.length > 1 ? '<button type="button" class="tier-row__delete" title="Stufe entfernen">✕</button>' : ''}
+        <div class="tier-row__right">
+          <input type="number" class="tier-row__input tier-amt-input" value="${tier.amount.toFixed(2)}" min="0" step="0.5">
+          <span class="tier-row__unit">${cur}</span>
+        </div>
+        ${state.currentTiers.length > 1 ? '<button type="button" class="tier-row__delete" title="' + t('btnClear') + '">✕</button>' : ''}
       `;
 
-      // Inputs change
       const kmInp = row.querySelector('.tier-km-input');
       const amtInp = row.querySelector('.tier-amt-input');
       const delBtn = row.querySelector('.tier-row__delete');
@@ -610,9 +879,9 @@
     const rawDist = parseFloat(elements.inputDistance.value) || 0;
     const isRound = elements.toggleRoundTrip.checked;
     if (isRound) {
-      elements.roundTripBadge.textContent = `2 × ${rawDist.toFixed(1)} km = ${(rawDist * 2).toFixed(1)} km`;
+      elements.roundTripBadge.textContent = `2 × ${rawDist.toFixed(1)} km = ${(rawDist * 2).toFixed(1)} km (${t('roundTripSubDouble')})`;
     } else {
-      elements.roundTripBadge.textContent = `Einfach: ${rawDist.toFixed(1)} km`;
+      elements.roundTripBadge.textContent = `${t('roundTripSubOneWay')}: ${rawDist.toFixed(1)} km`;
     }
   }
 
@@ -626,15 +895,12 @@
     const tieredEnabled = elements.toggleTieredPricing.checked;
     const cur = state.settings.currency || '€';
 
-    // 1. Kilometer charge
     const kmCharge = effectiveDistance * costPerKm;
 
-    // 2. Tiered surcharge
     let appliedTier = null;
     let flatSurcharge = 0;
 
     if (tieredEnabled && state.currentTiers.length > 0 && effectiveDistance > 0) {
-      // Find highest tier where distance >= tier.minKm
       const sortedTiers = [...state.currentTiers].sort((a, b) => b.minKm - a.minKm);
       for (const t of sortedTiers) {
         if (effectiveDistance >= t.minKm) {
@@ -645,11 +911,8 @@
       }
     }
 
-    // 3. Fuel cost
     const fuelLiters = (effectiveDistance / 100) * consumption;
     const fuelCost = fuelLiters * fuelPrice;
-
-    // Total Cost
     const totalCost = kmCharge + flatSurcharge + fuelCost;
 
     return {
@@ -676,15 +939,18 @@
 
     updateRoundTripBadge();
 
-    // Update active tier UI badge and row highlights
+    // Active tier UI badge and row highlights
     const tierRows = elements.tiersListContainer.querySelectorAll('.tier-row');
     tierRows.forEach((r) => r.classList.remove('active-tier'));
 
     if (data.tieredEnabled) {
       if (data.appliedTier) {
         elements.activeTierBanner.style.display = 'flex';
-        elements.activeTierText.textContent = `Aktiv: Stufe ab ${data.appliedTier.minKm} km (+${cur}${data.appliedTier.amount.toFixed(2)})`;
-        // Find index of applied tier
+        elements.activeTierText.textContent = t('activeTierReached', {
+          km: data.appliedTier.minKm,
+          cur,
+          amt: data.appliedTier.amount.toFixed(2),
+        });
         const idx = state.currentTiers.findIndex((t) => t.minKm === data.appliedTier.minKm);
         if (idx !== -1) {
           const row = document.getElementById(`tier-row-${idx}`);
@@ -692,29 +958,26 @@
         }
       } else {
         elements.activeTierBanner.style.display = 'flex';
-        const nextTier = state.currentTiers[0];
-        elements.activeTierText.textContent = nextTier
-          ? `Keine Stufe erreicht (nächste ab ${nextTier.minKm} km für +${cur}${nextTier.amount.toFixed(2)})`
-          : 'Keine Stufe konfiguriert';
+        elements.activeTierText.textContent = t('activeTierNone');
       }
     } else {
       elements.activeTierBanner.style.display = 'none';
     }
 
-    // Results Panel Breakdown
-    elements.resDistanceBadge.textContent = `${data.effectiveDistance.toFixed(1)} km Gesamt`;
+    // Results Panel
+    elements.resDistanceBadge.textContent = `${data.effectiveDistance.toFixed(1)} km Total`;
     elements.resDistanceDetail.textContent = data.isRoundTrip
-      ? `2 × ${data.rawDist.toFixed(1)} km (Hin- & Rückfahrt)`
-      : `${data.rawDist.toFixed(1)} km (Einfache Fahrt)`;
+      ? `2 × ${data.rawDist.toFixed(1)} km (${t('roundTripSubDouble')})`
+      : `${data.rawDist.toFixed(1)} km (${t('roundTripSubOneWay')})`;
 
     elements.resKmCost.textContent = `${cur}${data.kmCharge.toFixed(2)} (${cur}${data.costPerKm.toFixed(2)}/km)`;
 
     if (data.tieredEnabled && data.appliedTier) {
-      elements.resFlatCost.textContent = `${cur}${data.flatSurcharge.toFixed(2)} (ab ${data.appliedTier.minKm} km)`;
+      elements.resFlatCost.textContent = `${cur}${data.flatSurcharge.toFixed(2)} (≥ ${data.appliedTier.minKm} km)`;
     } else if (data.tieredEnabled) {
-      elements.resFlatCost.textContent = `${cur}0,00 (unter Mindest-km)`;
+      elements.resFlatCost.textContent = `${cur}0,00`;
     } else {
-      elements.resFlatCost.textContent = `Deaktiviert`;
+      elements.resFlatCost.textContent = `-`;
     }
 
     elements.resFuelCost.textContent = `${cur}${data.fuelCost.toFixed(2)} (${data.fuelLiters.toFixed(2)} L)`;
@@ -728,11 +991,11 @@
 
   function animateValue(elem, targetVal, cur) {
     const start = 0;
-    const duration = 300;
+    const duration = 280;
     const startTime = performance.now();
 
-    function update(t) {
-      const elapsed = t - startTime;
+    function update(time) {
+      const elapsed = time - startTime;
       const progress = Math.min(elapsed / duration, 1);
       const val = start + (targetVal - start) * (1 - Math.pow(1 - progress, 3));
       elem.textContent = `${cur}${val.toFixed(2)}`;
@@ -744,14 +1007,14 @@
   function saveCurrentCalculationToLogbook() {
     const data = getCalculatedData();
     if (data.effectiveDistance <= 0) {
-      showToast('Bitte gib zuerst eine Fahrtstrecke (km) ein', 'error');
+      showToast(state.lang === 'de' ? 'Bitte gib zuerst eine Fahrtstrecke (km) ein' : 'Please enter trip distance (km) first', 'error');
       return;
     }
 
-    const customer = elements.inputCustomer.value.trim() || 'Allgemein / Kunde';
-    const tourName = elements.inputTourName.value.trim() || (elements.toggleRoundTrip.checked ? 'Kundenbesuch (Hin & Rück)' : 'Kundenfahrt');
+    const customer = elements.inputCustomer.value.trim() || (state.lang === 'de' ? 'Allgemein / Kunde' : 'Client');
+    const tourName = elements.inputTourName.value.trim() || (elements.toggleRoundTrip.checked ? (state.lang === 'de' ? 'Kundenbesuch (Hin & Rück)' : 'Client Visit (Round Trip)') : (state.lang === 'de' ? 'Kundenfahrt' : 'Client Trip'));
     const tourDate = elements.inputTourDate.value || new Date().toISOString().split('T')[0];
-    const monthKey = tourDate.substring(0, 7); // e.g. "2026-09"
+    const monthKey = tourDate.substring(0, 7);
 
     const newTour = {
       id: 'tour_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
@@ -780,38 +1043,37 @@
     state.tours.unshift(newTour);
     saveTours();
     updateCustomerDatalist();
-    showToast(`Tour für "${customer}" im Fahrtenbuch gespeichert! 📁`, 'success');
+    showToast(state.lang === 'de' ? `Tour für "${customer}" gespeichert! 📁` : `Trip for "${customer}" saved! 📁`, 'success');
 
-    // Switch to accounting view to immediately view the month folder
     state.selectedMonth = monthKey;
     switchView('accounting');
   }
 
   function copySummaryToClipboard() {
     const data = getCalculatedData();
-    const customer = elements.inputCustomer.value.trim() || 'Kunde';
-    const tourName = elements.inputTourName.value.trim() || 'Fahrtkosten';
+    const customer = elements.inputCustomer.value.trim() || 'Client';
+    const tourName = elements.inputTourName.value.trim() || 'Trip Expense';
     const dateStr = elements.inputTourDate.value || new Date().toISOString().split('T')[0];
     const cur = data.cur;
 
     const lines = [
-      `🚗 TravelCalc Beleg: ${tourName}`,
-      `👤 Kunde: ${customer}`,
-      `📅 Datum: ${dateStr}`,
-      `📏 Strecke: ${data.effectiveDistance.toFixed(1)} km ${data.isRoundTrip ? '(Hin- & Rückfahrt)' : '(Einfache Fahrt)'}`,
-      `💶 Km-Pauschale: ${cur}${data.kmCharge.toFixed(2)} (${cur}${data.costPerKm.toFixed(2)}/km)`,
-      data.tieredEnabled && data.flatSurcharge > 0 ? `📦 Staffelzuschlag: ${cur}${data.flatSurcharge.toFixed(2)} (ab ${data.appliedTier?.minKm || 0} km)` : null,
-      `⛽ Kraftstoffanteil: ${cur}${data.fuelCost.toFixed(2)} (${data.fuelLiters.toFixed(2)} L)`,
+      `🚗 TravelCalc: ${tourName}`,
+      `👤 ${t('customerLabel')}: ${customer}`,
+      `📅 ${t('dateLabel')}: ${dateStr}`,
+      `📏 ${t('tripDistanceTitle')}: ${data.effectiveDistance.toFixed(1)} km ${data.isRoundTrip ? `(${t('roundTripSubDouble')})` : `(${t('roundTripSubOneWay')})`}`,
+      `💶 ${t('kmCostLabel')} ${cur}${data.kmCharge.toFixed(2)} (${cur}${data.costPerKm.toFixed(2)}/km)`,
+      data.tieredEnabled && data.flatSurcharge > 0 ? `📦 ${t('tieredCostLabel')} ${cur}${data.flatSurcharge.toFixed(2)} (≥ ${data.appliedTier?.minKm || 0} km)` : null,
+      `⛽ ${t('fuelCostLabel')} ${cur}${data.fuelCost.toFixed(2)} (${data.fuelLiters.toFixed(2)} L)`,
       `----------------------------------------`,
-      `💰 Gesamtbetrag: ${cur}${data.totalCost.toFixed(2)}`,
+      `💰 ${t('totalCostLabel')}: ${cur}${data.totalCost.toFixed(2)}`,
     ].filter(Boolean).join('\n');
 
     if (navigator.clipboard && navigator.clipboard.writeText) {
       navigator.clipboard.writeText(lines).then(() => {
-        showToast('Zusammenfassung kopiert! 📋', 'success');
+        showToast(state.lang === 'de' ? 'Zusammenfassung kopiert! 📋' : 'Summary copied! 📋', 'success');
       });
     } else {
-      showToast('Zusammenfassung konnte nicht kopiert werden', 'error');
+      showToast(state.lang === 'de' ? 'Konnte nicht kopiert werden' : 'Could not copy', 'error');
     }
   }
 
@@ -824,11 +1086,11 @@
     elements.quickRouteSelect.value = '';
     applyActiveProfileToCalc();
     calculateCosts(false);
-    showToast('Rechner zurückgesetzt', 'success');
+    showToast(state.lang === 'de' ? 'Rechner zurückgesetzt' : 'Calculator reset', 'success');
   }
 
   // ==========================================================================
-  // 7. MONATSBUCHHALTUNG (ACCOUNTING & FOLDERS)
+  // 9. MONATSBUCHHALTUNG (ACCOUNTING & FOLDERS)
   // ==========================================================================
   function setupAccounting() {
     elements.searchToursInput.addEventListener('input', (e) => {
@@ -837,11 +1099,9 @@
     });
 
     elements.sortToursSelect.addEventListener('change', renderToursList);
-
     elements.btnPrintMonthReport.addEventListener('click', printMonthlyAccountingReport);
     elements.btnExportMonthCsv.addEventListener('click', exportMonthlyCsv);
 
-    // Tour Edit Modal
     elements.btnCancelTourModal.addEventListener('click', closeTourModal);
     elements.btnSaveTourModal.addEventListener('click', saveTourModal);
     elements.tourModalOverlay.addEventListener('click', (e) => {
@@ -851,7 +1111,6 @@
 
   function getMonthsSummary() {
     const monthsMap = {};
-
     state.tours.forEach((tour) => {
       const m = tour.monthKey || tour.date.substring(0, 7);
       if (!monthsMap[m]) {
@@ -868,19 +1127,17 @@
       monthsMap[m].totalCost += tour.totalCost || 0;
     });
 
-    // Sort descending by month key
     return Object.values(monthsMap).sort((a, b) => b.key.localeCompare(a.key));
   }
 
   function formatMonthLabel(monthKey) {
-    if (!monthKey || monthKey.length < 7) return monthKey || 'Unbekannt';
+    if (!monthKey || monthKey.length < 7) return monthKey || '';
     const [year, month] = monthKey.split('-');
-    const monthNames = [
-      'Januar', 'Februar', 'März', 'April', 'Mai', 'Juni',
-      'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember',
-    ];
+    const deMonths = ['Januar', 'Februar', 'März', 'April', 'Mai', 'Juni', 'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember'];
+    const enMonths = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+    const names = state.lang === 'de' ? deMonths : enMonths;
     const mIdx = parseInt(month, 10) - 1;
-    return `${monthNames[mIdx] || month} ${year}`;
+    return `${names[mIdx] || month} ${year}`;
   }
 
   function renderAccountingView() {
@@ -896,12 +1153,11 @@
 
     const months = getMonthsSummary();
 
-    // "Alle" Pill
     const allPill = document.createElement('div');
     allPill.className = `month-folder-pill ${state.selectedMonth === 'all' ? 'active' : ''}`;
     allPill.innerHTML = `
       <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/></svg>
-      <span>Alle Touren</span>
+      <span>${t('allTours')}</span>
       <span class="month-folder-pill__count">${state.tours.length}</span>
     `;
     allPill.addEventListener('click', () => {
@@ -911,7 +1167,6 @@
     });
     strip.appendChild(allPill);
 
-    // Each Month Pill
     months.forEach((m) => {
       const pill = document.createElement('div');
       pill.className = `month-folder-pill ${state.selectedMonth === m.key ? 'active' : ''}`;
@@ -928,7 +1183,6 @@
       strip.appendChild(pill);
     });
 
-    // If current selected month is not found in months, default to first month or 'all'
     if (state.selectedMonth !== 'all' && !months.some((m) => m.key === state.selectedMonth)) {
       state.selectedMonth = months[0]?.key || 'all';
     }
@@ -937,17 +1191,14 @@
   function getFilteredTours() {
     let list = [...state.tours];
 
-    // Filter by month
     if (state.selectedMonth !== 'all') {
       list = list.filter((t) => (t.monthKey || t.date.substring(0, 7)) === state.selectedMonth);
     }
 
-    // Filter by selected customer
     if (state.selectedCustomer) {
       list = list.filter((t) => (t.customer || '').toLowerCase() === state.selectedCustomer.toLowerCase());
     }
 
-    // Filter by search query
     if (state.searchQuery) {
       const q = state.searchQuery;
       list = list.filter(
@@ -958,7 +1209,6 @@
       );
     }
 
-    // Sort
     const sortVal = elements.sortToursSelect.value;
     list.sort((a, b) => {
       if (sortVal === 'date-desc') return new Date(b.date) - new Date(a.date);
@@ -994,36 +1244,32 @@
     const avg = count > 0 ? totalCost / count : 0;
 
     elements.kpiTotalKm.textContent = `${totalKm.toFixed(1)} km`;
-    elements.kpiTripsCount.textContent = `${count} ${count === 1 ? 'Fahrt' : 'Fahrten'}`;
+    elements.kpiTripsCount.textContent = `${count} ${count === 1 ? t('trip') : t('trips')}`;
     elements.kpiTotalCost.textContent = `${cur}${totalCost.toFixed(2)}`;
-    elements.kpiAvgPerTrip.textContent = `Ø ${cur}${avg.toFixed(2)} / Fahrt`;
+    elements.kpiAvgPerTrip.textContent = `Ø ${cur}${avg.toFixed(2)} / ${t('trip')}`;
     elements.kpiSurcharges.textContent = `${cur}${totalSurcharges.toFixed(2)}`;
     elements.kpiFuelTotal.textContent = `${cur}${totalFuel.toFixed(2)}`;
-    elements.kpiFuelLiters.textContent = `${totalFuelLiters.toFixed(1)} L Sprit`;
+    elements.kpiFuelLiters.textContent = `${totalFuelLiters.toFixed(1)} L`;
   }
 
   function renderCustomerBreakdown() {
     const container = elements.customerChipsContainer;
     container.innerHTML = '';
 
-    // Get tours in the currently selected month
     let monthTours = state.tours;
     if (state.selectedMonth !== 'all') {
       monthTours = monthTours.filter((t) => (t.monthKey || t.date.substring(0, 7)) === state.selectedMonth);
     }
 
     if (monthTours.length === 0) {
-      container.innerHTML = '<span style="font-size:0.75rem; color:var(--text-muted);">Keine Fahrten in diesem Monat erfasst.</span>';
+      container.innerHTML = `<span style="font-size:0.75rem; color:var(--text-muted);">${state.lang === 'de' ? 'Keine Fahrten in diesem Monat erfasst.' : 'No trips recorded for this month.'}</span>`;
       return;
     }
 
-    // Group by customer
     const custMap = {};
     monthTours.forEach((t) => {
       const c = t.customer || 'Allgemein';
-      if (!custMap[c]) {
-        custMap[c] = { name: c, count: 0, totalKm: 0, totalCost: 0 };
-      }
+      if (!custMap[c]) custMap[c] = { name: c, count: 0, totalKm: 0, totalCost: 0 };
       custMap[c].count++;
       custMap[c].totalKm += t.effectiveDistance || 0;
       custMap[c].totalCost += t.totalCost || 0;
@@ -1044,13 +1290,13 @@
 
       chip.addEventListener('click', () => {
         if (state.selectedCustomer.toLowerCase() === c.name.toLowerCase()) {
-          state.selectedCustomer = ''; // Toggle off
+          state.selectedCustomer = '';
         } else {
           state.selectedCustomer = c.name;
         }
         elements.activeCustomerFilterHint.textContent = state.selectedCustomer
-          ? `Gefiltert nach: ${state.selectedCustomer} (Klick zum Aufheben)`
-          : 'Klick zum Filtern';
+          ? t('customerFilterActive', { name: state.selectedCustomer })
+          : t('customerFilterHint');
         renderAccountingView();
       });
 
@@ -1068,9 +1314,8 @@
     if (tours.length === 0) {
       container.innerHTML = `
         <div class="empty-box">
-          <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.5" style="margin-bottom:8px; opacity:0.5;"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/></svg>
-          <div>Keine passenden Touren gefunden.</div>
-          <div style="font-size:0.75rem; margin-top:4px;">Erstelle eine neue Fahrt im Rechner oder passe die Filter an.</div>
+          <svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" stroke-width="1.5" style="margin-bottom:8px; opacity:0.5;"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/></svg>
+          <div>${state.lang === 'de' ? 'Keine passenden Touren gefunden.' : 'No matching trips found.'}</div>
         </div>
       `;
       return;
@@ -1082,14 +1327,14 @@
 
       const dateObj = new Date(tour.date);
       const dateFormatted = !isNaN(dateObj.getTime())
-        ? dateObj.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' })
+        ? dateObj.toLocaleDateString(state.lang === 'de' ? 'de-DE' : 'en-US', { day: '2-digit', month: '2-digit', year: 'numeric' })
         : tour.date;
 
       card.innerHTML = `
         <div class="tour-card__top">
           <div>
-            <div class="tour-card__customer">${escapeHtml(tour.customer || 'Allgemein')}</div>
-            <div class="tour-card__title">${escapeHtml(tour.name || 'Tour')}</div>
+            <div class="tour-card__customer">${escapeHtml(tour.customer || '-')}</div>
+            <div class="tour-card__title">${escapeHtml(tour.name || '-')}</div>
           </div>
           <div class="tour-card__cost">${cur}${(tour.totalCost || 0).toFixed(2)}</div>
         </div>
@@ -1100,32 +1345,29 @@
             ${dateFormatted}
           </span>
           <span class="tour-card__tag">
-            <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
-            ${(tour.effectiveDistance || 0).toFixed(1)} km ${tour.isRoundTrip ? '(Hin & Rück)' : ''}
+            ${(tour.effectiveDistance || 0).toFixed(1)} km ${tour.isRoundTrip ? `(${t('roundTripSubDouble')})` : ''}
           </span>
-          ${tour.flatSurcharge > 0 ? `<span class="badge-subtle">Staffel: +${cur}${tour.flatSurcharge.toFixed(2)}</span>` : ''}
-          <span class="tour-card__tag">🚗 ${tour.profileName || 'PKW'}</span>
+          ${tour.flatSurcharge > 0 ? `<span class="badge-subtle">+${cur}${tour.flatSurcharge.toFixed(2)}</span>` : ''}
+          <span class="tour-card__tag">🚗 ${tour.profileName || 'Car'}</span>
 
           <div class="tour-card__actions">
-            <button type="button" class="btn-icon btn-print-tour" title="Einzelbeleg drucken">
+            <button type="button" class="btn-icon btn-print-tour" title="Print PDF">
               <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
             </button>
-            <button type="button" class="btn-icon btn-copy-tour" title="In Rechner laden / Duplizieren">
+            <button type="button" class="btn-icon btn-copy-tour" title="Load into Calculator">
               <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
             </button>
-            <button type="button" class="btn-icon btn-edit-tour" title="Bearbeiten">
+            <button type="button" class="btn-icon btn-edit-tour" title="Edit">
               <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
             </button>
-            <button type="button" class="btn-icon btn-danger btn-delete-tour" title="Löschen">
+            <button type="button" class="btn-icon btn-danger btn-delete-tour" title="Delete">
               <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
             </button>
           </div>
         </div>
       `;
 
-      // Actions
       card.querySelector('.btn-print-tour').addEventListener('click', () => printSingleTourReceipt(tour));
-
       card.querySelector('.btn-copy-tour').addEventListener('click', () => {
         elements.inputCustomer.value = tour.customer || '';
         elements.inputTourName.value = tour.name || '';
@@ -1134,16 +1376,14 @@
         updateRoundTripBadge();
         calculateCosts(true);
         switchView('calculator');
-        showToast('Tour in den Rechner übernommen!', 'success');
+        showToast(state.lang === 'de' ? 'Tour in den Rechner geladen!' : 'Loaded into calculator!', 'success');
       });
-
       card.querySelector('.btn-edit-tour').addEventListener('click', () => openTourModal(tour));
-
       card.querySelector('.btn-delete-tour').addEventListener('click', () => {
         state.tours = state.tours.filter((t) => t.id !== tour.id);
         saveTours();
         renderAccountingView();
-        showToast('Tour gelöscht', 'success');
+        showToast(state.lang === 'de' ? 'Tour gelöscht' : 'Trip deleted', 'success');
       });
 
       container.appendChild(card);
@@ -1156,6 +1396,7 @@
     elements.modalTourName.value = tour.name || '';
     elements.modalTourDate.value = tour.date;
     elements.modalTourDistance.value = tour.effectiveDistance || tour.distanceRaw;
+    elements.tourModalTitle.textContent = t('editTourModalTitle');
     elements.tourModalOverlay.classList.add('active');
   }
 
@@ -1177,7 +1418,6 @@
     if (!isNaN(newDist) && newDist > 0 && newDist !== tour.effectiveDistance) {
       tour.effectiveDistance = newDist;
       tour.distanceRaw = tour.isRoundTrip ? newDist / 2 : newDist;
-      // Recalculate
       tour.kmCharge = tour.effectiveDistance * (tour.costPerKm || 0.30);
       tour.fuelLiters = (tour.effectiveDistance / 100) * (tour.consumption || 6.2);
       tour.fuelCost = tour.fuelLiters * (tour.fuelPrice || 1.70);
@@ -1187,16 +1427,18 @@
     saveTours();
     renderAccountingView();
     closeTourModal();
-    showToast('Tour aktualisiert!', 'success');
+    showToast(state.lang === 'de' ? 'Tour aktualisiert!' : 'Trip updated!', 'success');
   }
 
   // ==========================================================================
-  // 8. PRINT & EXPORT (MONATSBERICHT & CSV)
+  // 10. PRINT REPORTS (PDF & CSV)
   // ==========================================================================
   function printMonthlyAccountingReport() {
     const tours = getFilteredTours();
     const cur = state.settings.currency || '€';
-    const monthLabel = state.selectedMonth === 'all' ? 'Gesamtübersicht aller Fahrten' : formatMonthLabel(state.selectedMonth);
+    const monthLabel = state.selectedMonth === 'all'
+      ? (state.lang === 'de' ? 'Gesamtübersicht aller Fahrten' : 'Overall Trip Summary')
+      : formatMonthLabel(state.selectedMonth);
 
     let totalKm = 0;
     let totalCost = 0;
@@ -1231,42 +1473,42 @@
     elements.printContainer.innerHTML = `
       <div class="print-report-header">
         <div>
-          <div class="print-report-title">Fahrtkosten- & Reisekostennachweis</div>
-          <div class="print-report-meta">Abrechnungszeitraum: <strong>${monthLabel}</strong> ${state.selectedCustomer ? `• Kunde: ${escapeHtml(state.selectedCustomer)}` : ''}</div>
-          <div class="print-report-meta">Erstellt am: ${new Date().toLocaleDateString('de-DE')} • TravelCalc</div>
+          <div class="print-report-title">${state.lang === 'de' ? 'Fahrtkosten- & Reisekostennachweis' : 'Trip Expense & Mileage Report'}</div>
+          <div class="print-report-meta">${state.lang === 'de' ? 'Abrechnungszeitraum' : 'Period'}: <strong>${monthLabel}</strong> ${state.selectedCustomer ? `• ${escapeHtml(state.selectedCustomer)}` : ''}</div>
+          <div class="print-report-meta">TravelCalc • ${new Date().toLocaleDateString(state.lang === 'de' ? 'de-DE' : 'en-US')}</div>
         </div>
         <div style="text-align: right;">
           <div style="font-size: 14pt; font-weight: bold;">${cur}${totalCost.toFixed(2)}</div>
-          <div style="font-size: 9pt; color: #555;">Gesamtabrechnung (${totalKm.toFixed(1)} km)</div>
+          <div style="font-size: 9pt; color: #555;">${totalKm.toFixed(1)} km</div>
         </div>
       </div>
 
       <div class="print-summary-box">
-        <div><strong>Anzahl Fahrten:</strong> ${tours.length}</div>
-        <div><strong>Gesamtkilometer:</strong> ${totalKm.toFixed(1)} km</div>
-        <div><strong>Km-Pauschale:</strong> ${cur}${totalKmCharge.toFixed(2)}</div>
-        <div><strong>Staffelpauschalen:</strong> ${cur}${totalSurcharges.toFixed(2)}</div>
-        <div><strong>Kraftstoffanteil:</strong> ${cur}${totalFuel.toFixed(2)}</div>
+        <div><strong>${state.lang === 'de' ? 'Anzahl Fahrten' : 'Total Trips'}:</strong> ${tours.length}</div>
+        <div><strong>${state.lang === 'de' ? 'Gesamtkilometer' : 'Total Distance'}:</strong> ${totalKm.toFixed(1)} km</div>
+        <div><strong>${state.lang === 'de' ? 'Km-Pauschale' : 'Mileage Charge'}:</strong> ${cur}${totalKmCharge.toFixed(2)}</div>
+        <div><strong>${state.lang === 'de' ? 'Staffelpauschalen' : 'Tiered Surcharges'}:</strong> ${cur}${totalSurcharges.toFixed(2)}</div>
+        <div><strong>${state.lang === 'de' ? 'Kraftstoff' : 'Fuel'}:</strong> ${cur}${totalFuel.toFixed(2)}</div>
       </div>
 
       <table class="print-table">
         <thead>
           <tr>
-            <th style="width: 25px;">Nr</th>
-            <th style="width: 75px;">Datum</th>
-            <th>Kunde / Schüler</th>
-            <th>Anlass / Tour</th>
-            <th class="num" style="width: 65px;">Strecke</th>
-            <th class="num" style="width: 65px;">Km-Satz</th>
-            <th class="num" style="width: 65px;">Staffel</th>
-            <th class="num" style="width: 65px;">Sprit</th>
-            <th class="num" style="width: 75px;">Gesamt</th>
+            <th style="width: 25px;">#</th>
+            <th style="width: 75px;">${t('dateLabel')}</th>
+            <th>${t('customerLabel')}</th>
+            <th>${t('tourNameLabel')}</th>
+            <th class="num" style="width: 65px;">${state.lang === 'de' ? 'Strecke' : 'Distance'}</th>
+            <th class="num" style="width: 65px;">${state.lang === 'de' ? 'Km-Satz' : 'Rate'}</th>
+            <th class="num" style="width: 65px;">${state.lang === 'de' ? 'Staffel' : 'Tier'}</th>
+            <th class="num" style="width: 65px;">${state.lang === 'de' ? 'Sprit' : 'Fuel'}</th>
+            <th class="num" style="width: 75px;">${state.lang === 'de' ? 'Gesamt' : 'Total'}</th>
           </tr>
         </thead>
         <tbody>
           ${rowsHtml}
           <tr class="total-row">
-            <td colspan="4">Summe (${monthLabel}):</td>
+            <td colspan="4">${state.lang === 'de' ? 'Summe' : 'Total'} (${monthLabel}):</td>
             <td class="num">${totalKm.toFixed(1)} km</td>
             <td class="num">${cur}${totalKmCharge.toFixed(2)}</td>
             <td class="num">${cur}${totalSurcharges.toFixed(2)}</td>
@@ -1277,8 +1519,8 @@
       </table>
 
       <div class="print-signatures">
-        <div class="print-signature-line">Datum, Unterschrift Auftragnehmer / Fahrer</div>
-        <div class="print-signature-line">Kenntnisnahme / Buchhaltung</div>
+        <div class="print-signature-line">${state.lang === 'de' ? 'Datum, Unterschrift Fahrer' : 'Date, Driver Signature'}</div>
+        <div class="print-signature-line">${state.lang === 'de' ? 'Kenntnisnahme / Buchhaltung' : 'Approval / Accounting'}</div>
       </div>
     `;
 
@@ -1288,30 +1530,30 @@
   function printSingleTourReceipt(tour) {
     const cur = tour.cur || state.settings.currency || '€';
     elements.printContainer.innerHTML = `
-      <div style="padding: 20px 0; max-width: 600px; margin: 0 auto;">
+      <div style="padding: 20px 0; max-width: 580px; margin: 0 auto;">
         <div class="print-report-header">
           <div>
-            <div class="print-report-title">Fahrtkostenbeleg (Einzelnachweis)</div>
-            <div class="print-report-meta">Datum der Fahrt: <strong>${tour.date}</strong></div>
+            <div class="print-report-title">${state.lang === 'de' ? 'Fahrtkostenbeleg (Einzelnachweis)' : 'Trip Expense Receipt'}</div>
+            <div class="print-report-meta">${t('dateLabel')}: <strong>${tour.date}</strong></div>
           </div>
           <div style="text-align: right;">
             <div style="font-size: 16pt; font-weight: bold;">${cur}${(tour.totalCost || 0).toFixed(2)}</div>
           </div>
         </div>
 
-        <table class="print-table" style="margin-top: 20px;">
-          <tr><td><strong>Kunde / Auftraggeber:</strong></td><td>${escapeHtml(tour.customer || '-')}</td></tr>
-          <tr><td><strong>Anlass / Bezeichnung:</strong></td><td>${escapeHtml(tour.name || '-')}</td></tr>
-          <tr><td><strong>Fahrzeug:</strong></td><td>${escapeHtml(tour.profileName || '-')}</td></tr>
-          <tr><td><strong>Gefahrene Strecke:</strong></td><td>${(tour.effectiveDistance || 0).toFixed(1)} km ${tour.isRoundTrip ? '(Hin- & Rückfahrt)' : '(Einfache Fahrt)'}</td></tr>
-          <tr><td><strong>Kilometerpauschale:</strong></td><td>${cur}${(tour.kmCharge || 0).toFixed(2)} (${cur}${(tour.costPerKm || 0.30).toFixed(2)}/km)</td></tr>
-          ${tour.flatSurcharge > 0 ? `<tr><td><strong>Staffelpauschale:</strong></td><td>${cur}${tour.flatSurcharge.toFixed(2)} (Stufe ab ${tour.appliedTier?.minKm || 0} km)</td></tr>` : ''}
-          <tr><td><strong>Kraftstoffanteil:</strong></td><td>${cur}${(tour.fuelCost || 0).toFixed(2)} (${(tour.fuelLiters || 0).toFixed(2)} L)</td></tr>
-          <tr class="total-row"><td><strong>Abrechnungsbetrag gesamt:</strong></td><td><strong>${cur}${(tour.totalCost || 0).toFixed(2)}</strong></td></tr>
+        <table class="print-table" style="margin-top: 16px;">
+          <tr><td><strong>${t('customerLabel')}:</strong></td><td>${escapeHtml(tour.customer || '-')}</td></tr>
+          <tr><td><strong>${t('tourNameLabel')}:</strong></td><td>${escapeHtml(tour.name || '-')}</td></tr>
+          <tr><td><strong>${state.lang === 'de' ? 'Fahrzeug' : 'Vehicle'}:</strong></td><td>${escapeHtml(tour.profileName || '-')}</td></tr>
+          <tr><td><strong>${state.lang === 'de' ? 'Strecke' : 'Distance'}:</strong></td><td>${(tour.effectiveDistance || 0).toFixed(1)} km ${tour.isRoundTrip ? `(${t('roundTripSubDouble')})` : `(${t('roundTripSubOneWay')})`}</td></tr>
+          <tr><td><strong>${t('kmCostLabel')}:</strong></td><td>${cur}${(tour.kmCharge || 0).toFixed(2)} (${cur}${(tour.costPerKm || 0.30).toFixed(2)}/km)</td></tr>
+          ${tour.flatSurcharge > 0 ? `<tr><td><strong>${t('tieredCostLabel')}:</strong></td><td>${cur}${tour.flatSurcharge.toFixed(2)} (≥ ${tour.appliedTier?.minKm || 0} km)</td></tr>` : ''}
+          <tr><td><strong>${t('fuelCostLabel')}:</strong></td><td>${cur}${(tour.fuelCost || 0).toFixed(2)} (${(tour.fuelLiters || 0).toFixed(2)} L)</td></tr>
+          <tr class="total-row"><td><strong>${t('totalCostLabel')}:</strong></td><td><strong>${cur}${(tour.totalCost || 0).toFixed(2)}</strong></td></tr>
         </table>
 
-        <div class="print-signatures" style="margin-top: 40px;">
-          <div class="print-signature-line">Datum & Unterschrift</div>
+        <div class="print-signatures" style="margin-top: 36px;">
+          <div class="print-signature-line">${state.lang === 'de' ? 'Datum & Unterschrift' : 'Date & Signature'}</div>
         </div>
       </div>
     `;
@@ -1321,7 +1563,7 @@
   function exportMonthlyCsv() {
     const tours = getFilteredTours();
     if (tours.length === 0) {
-      showToast('Keine Touren zum Exportieren vorhanden', 'error');
+      showToast(state.lang === 'de' ? 'Keine Touren zum Exportieren vorhanden' : 'No trips to export', 'error');
       return;
     }
 
@@ -1349,11 +1591,11 @@
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    showToast(`CSV-Datei "${filename}" heruntergeladen! 📊`, 'success');
+    showToast(state.lang === 'de' ? `CSV "${filename}" heruntergeladen!` : `CSV "${filename}" downloaded!`, 'success');
   }
 
   // ==========================================================================
-  // 9. GESPEICHERTE ORTE & ROUTEN
+  // 11. GESPEICHERTE ORTE & ROUTEN
   // ==========================================================================
   function setupPlacesAndRoutes() {
     elements.btnOpenAddPlaceModal.addEventListener('click', () => openPlaceModal(null));
@@ -1372,12 +1614,11 @@
   }
 
   function renderPlacesAndRoutes() {
-    // 1. Places Grid
     const pContainer = elements.placesGridContainer;
     pContainer.innerHTML = '';
 
     if (state.places.length === 0) {
-      pContainer.innerHTML = '<div class="empty-box" style="grid-column: 1/-1;">Keine gespeicherten Orte vorhanden.</div>';
+      pContainer.innerHTML = `<div class="empty-box" style="grid-column: 1/-1;">${state.lang === 'de' ? 'Keine gespeicherten Orte vorhanden.' : 'No saved locations.'}</div>`;
     } else {
       state.places.forEach((place) => {
         const card = document.createElement('div');
@@ -1387,11 +1628,11 @@
             <div class="place-card__name">📍 ${escapeHtml(place.name)}</div>
             <div class="place-card__address">${escapeHtml(place.address || '')}</div>
           </div>
-          <div style="display: flex; gap: 6px;">
-            <button type="button" class="btn-icon btn-use-start" title="Als Start im Routenplaner setzen">🛫</button>
-            <button type="button" class="btn-icon btn-use-dest" title="Als Ziel im Routenplaner setzen">🎯</button>
-            <button type="button" class="btn-icon btn-edit-place" title="Bearbeiten">✏️</button>
-            <button type="button" class="btn-icon btn-danger btn-del-place" title="Löschen">✕</button>
+          <div style="display: flex; gap: 4px;">
+            <button type="button" class="btn-icon btn-use-start" title="Start">🛫</button>
+            <button type="button" class="btn-icon btn-use-dest" title="Dest">🎯</button>
+            <button type="button" class="btn-icon btn-edit-place" title="Edit">✏️</button>
+            <button type="button" class="btn-icon btn-danger btn-del-place" title="Delete">✕</button>
           </div>
         `;
 
@@ -1399,36 +1640,34 @@
           elements.routeOrigin.value = place.address || place.name;
           elements.routeFinderBox.classList.remove('hidden');
           switchView('calculator');
-          showToast(`"${place.name}" als Start gesetzt`, 'success');
+          showToast(`"${place.name}" set as start`, 'success');
         });
 
         card.querySelector('.btn-use-dest').addEventListener('click', () => {
           elements.routeDestination.value = place.address || place.name;
           elements.routeFinderBox.classList.remove('hidden');
           switchView('calculator');
-          showToast(`"${place.name}" als Ziel gesetzt`, 'success');
+          showToast(`"${place.name}" set as dest`, 'success');
         });
 
         card.querySelector('.btn-edit-place').addEventListener('click', () => openPlaceModal(place));
-
         card.querySelector('.btn-del-place').addEventListener('click', () => {
           state.places = state.places.filter((p) => p.id !== place.id);
           savePlaces();
           renderPlacesAndRoutes();
           updatePlaceSelectDropdowns();
-          showToast('Ort gelöscht', 'success');
+          showToast(state.lang === 'de' ? 'Ort gelöscht' : 'Location deleted', 'success');
         });
 
         pContainer.appendChild(card);
       });
     }
 
-    // 2. Routes Grid
     const rContainer = elements.routesGridContainer;
     rContainer.innerHTML = '';
 
     if (state.savedRoutes.length === 0) {
-      rContainer.innerHTML = '<div class="empty-box" style="grid-column: 1/-1;">Keine Standard-Routen hinterlegt.</div>';
+      rContainer.innerHTML = `<div class="empty-box" style="grid-column: 1/-1;">${state.lang === 'de' ? 'Keine Standard-Routen hinterlegt.' : 'No saved routes.'}</div>`;
     } else {
       state.savedRoutes.forEach((route) => {
         const card = document.createElement('div');
@@ -1436,12 +1675,12 @@
         card.innerHTML = `
           <div>
             <div class="route-card__name">🛣️ ${escapeHtml(route.name)}</div>
-            <div class="route-card__sub">${escapeHtml(route.customer || 'Allgemein')} • ${route.distance} km ${route.isRoundTrip ? '(Hin & Rück)' : ''}</div>
+            <div class="route-card__sub">${escapeHtml(route.customer || 'Client')} • ${route.distance} km ${route.isRoundTrip ? `(${t('roundTripSubDouble')})` : ''}</div>
           </div>
-          <div style="display: flex; gap: 6px;">
-            <button type="button" class="btn-primary btn-sm btn-load-route" title="In den Rechner laden">Laden</button>
-            <button type="button" class="btn-icon btn-edit-route" title="Bearbeiten">✏️</button>
-            <button type="button" class="btn-icon btn-danger btn-del-route" title="Löschen">✕</button>
+          <div style="display: flex; gap: 4px; align-items: center;">
+            <button type="button" class="btn-primary btn-sm btn-load-route" style="height:30px; font-size:0.75rem;">Laden</button>
+            <button type="button" class="btn-icon btn-edit-route" title="Edit">✏️</button>
+            <button type="button" class="btn-icon btn-danger btn-del-route" title="Delete">✕</button>
           </div>
         `;
 
@@ -1453,17 +1692,16 @@
           updateRoundTripBadge();
           calculateCosts(true);
           switchView('calculator');
-          showToast(`Route "${route.name}" geladen!`, 'success');
+          showToast(`"${route.name}" loaded!`, 'success');
         });
 
         card.querySelector('.btn-edit-route').addEventListener('click', () => openRouteModal(route));
-
         card.querySelector('.btn-del-route').addEventListener('click', () => {
           state.savedRoutes = state.savedRoutes.filter((r) => r.id !== route.id);
           saveRoutes();
           renderPlacesAndRoutes();
           updateQuickRouteSelect();
-          showToast('Route gelöscht', 'success');
+          showToast(state.lang === 'de' ? 'Route gelöscht' : 'Route deleted', 'success');
         });
 
         rContainer.appendChild(card);
@@ -1478,7 +1716,7 @@
     elements.modalPlaceId.value = place ? place.id : '';
     elements.modalPlaceName.value = place ? place.name : '';
     elements.modalPlaceAddress.value = place ? place.address : '';
-    elements.placeModalTitle.textContent = place ? 'Ort bearbeiten' : 'Neuen Ort anlegen';
+    elements.placeModalTitle.textContent = t('placeModalTitle');
     elements.placeModalOverlay.classList.add('active');
   }
 
@@ -1492,7 +1730,7 @@
     const address = elements.modalPlaceAddress.value.trim();
 
     if (!name) {
-      showToast('Bitte gib einen Namen für den Ort ein', 'error');
+      showToast(state.lang === 'de' ? 'Bitte gib einen Namen ein' : 'Please enter a name', 'error');
       return;
     }
 
@@ -1503,17 +1741,13 @@
         p.address = address;
       }
     } else {
-      state.places.push({
-        id: 'place_' + Date.now(),
-        name,
-        address,
-      });
+      state.places.push({ id: 'place_' + Date.now(), name, address });
     }
 
     savePlaces();
     renderPlacesAndRoutes();
     closePlaceModal();
-    showToast('Ort gespeichert!', 'success');
+    showToast(state.lang === 'de' ? 'Ort gespeichert!' : 'Location saved!', 'success');
   }
 
   function openRouteModal(route) {
@@ -1522,7 +1756,7 @@
     elements.modalRouteCustomer.value = route ? route.customer : (elements.inputCustomer?.value || '');
     elements.modalRouteDistance.value = route ? route.distance : (elements.inputDistance?.value || '');
     elements.modalRouteRoundTrip.checked = route ? !!route.isRoundTrip : true;
-    elements.routeModalTitle.textContent = route ? 'Route bearbeiten' : 'Neue Route anlegen';
+    elements.routeModalTitle.textContent = t('routeModalTitle');
     elements.routeModalOverlay.classList.add('active');
   }
 
@@ -1533,12 +1767,12 @@
   function saveRouteModal() {
     const id = elements.modalRouteId.value;
     const name = elements.modalRouteName.value.trim();
-    const customer = elements.modalRouteCustomer.value.trim() || 'Allgemein';
+    const customer = elements.modalRouteCustomer.value.trim() || 'Client';
     const distance = parseFloat(elements.modalRouteDistance.value) || 0;
     const isRoundTrip = elements.modalRouteRoundTrip.checked;
 
     if (!name || distance <= 0) {
-      showToast('Bitte Routenname und Distanz (km) angeben', 'error');
+      showToast(state.lang === 'de' ? 'Bitte Name und Distanz (km) angeben' : 'Please provide name and distance', 'error');
       return;
     }
 
@@ -1563,13 +1797,12 @@
     saveRoutes();
     renderPlacesAndRoutes();
     closeRouteModal();
-    showToast('Route gespeichert!', 'success');
+    showToast(state.lang === 'de' ? 'Route gespeichert!' : 'Route saved!', 'success');
   }
 
   function updatePlaceSelectDropdowns() {
-    const opts = ['<option value="">Ort wählen...</option>']
-      .concat(state.places.map((p) => `<option value="${escapeHtml(p.address || p.name)}">${escapeHtml(p.name)}</option>`))
-      .join('');
+    const placeholder = `<option value="">${t('selectPlacePlaceholder')}</option>`;
+    const opts = placeholder + state.places.map((p) => `<option value="${escapeHtml(p.address || p.name)}">${escapeHtml(p.name)}</option>`).join('');
 
     if (elements.quickOriginSelect) elements.quickOriginSelect.innerHTML = opts;
     if (elements.quickDestSelect) elements.quickDestSelect.innerHTML = opts;
@@ -1577,9 +1810,8 @@
 
   function updateQuickRouteSelect() {
     if (!elements.quickRouteSelect) return;
-    const opts = ['<option value="">Gespeicherte Route laden...</option>']
-      .concat(state.savedRoutes.map((r) => `<option value="${r.id}">${escapeHtml(r.name)} (${r.distance} km)</option>`))
-      .join('');
+    const placeholder = `<option value="">${t('loadRoutePlaceholder')}</option>`;
+    const opts = placeholder + state.savedRoutes.map((r) => `<option value="${r.id}">${escapeHtml(r.name)} (${r.distance} km)</option>`).join('');
     elements.quickRouteSelect.innerHTML = opts;
   }
 
@@ -1588,17 +1820,15 @@
     const set = new Set();
     state.tours.forEach((t) => { if (t.customer) set.add(t.customer); });
     state.savedRoutes.forEach((r) => { if (r.customer) set.add(r.customer); });
-    elements.customerDatalist.innerHTML = Array.from(set)
-      .map((c) => `<option value="${escapeHtml(c)}">`)
-      .join('');
+    elements.customerDatalist.innerHTML = Array.from(set).map((c) => `<option value="${escapeHtml(c)}">`).join('');
   }
 
   // ==========================================================================
-  // 10. ROUTING API ENGINE (OPEN ROUTING & GOOGLE MAPS FALLBACK)
+  // 12. ROUTING ENGINE
   // ==========================================================================
   function fetchUserOriginLocation() {
     if (!navigator.geolocation) {
-      showToast('Geolokalisierung im Browser nicht verfügbar', 'error');
+      showToast('Geolocation not available', 'error');
       return;
     }
 
@@ -1611,16 +1841,16 @@
           const data = await res.json();
           const city = data.address?.city || data.address?.town || data.address?.village || data.display_name?.split(',')[0];
           elements.routeOrigin.value = city || `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`;
-          showToast(`Standort: ${elements.routeOrigin.value}`, 'success');
+          showToast(`Location: ${elements.routeOrigin.value}`, 'success');
         } catch (e) {
           elements.routeOrigin.value = `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`;
         } finally {
-          elements.btnCurrentLocation.innerHTML = `<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/><line x1="12" y1="2" x2="12" y2="5"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="2" y1="12" x2="5" y2="12"/><line x1="19" y1="12" x2="22" y2="12"/></svg>`;
+          elements.btnCurrentLocation.innerHTML = `<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/><line x1="12" y1="2" x2="12" y2="5"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="2" y1="12" x2="5" y2="12"/><line x1="19" y1="12" x2="22" y2="12"/></svg>`;
         }
       },
       (err) => {
-        elements.btnCurrentLocation.innerHTML = `<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/><line x1="12" y1="2" x2="12" y2="5"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="2" y1="12" x2="5" y2="12"/><line x1="19" y1="12" x2="22" y2="12"/></svg>`;
-        showToast('Standort konnte nicht ermittelt werden', 'error');
+        elements.btnCurrentLocation.innerHTML = `<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/><line x1="12" y1="2" x2="12" y2="5"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="2" y1="12" x2="5" y2="12"/><line x1="19" y1="12" x2="22" y2="12"/></svg>`;
+        showToast('GPS error', 'error');
       },
       { timeout: 8000 }
     );
@@ -1631,28 +1861,25 @@
     const destination = elements.routeDestination.value.trim();
 
     if (!origin || !destination) {
-      showToast('Bitte Start- und Zielort eingeben', 'error');
+      showToast(state.lang === 'de' ? 'Bitte Start und Ziel eingeben' : 'Please enter start & destination', 'error');
       return;
     }
 
     elements.btnCalcRouteDist.disabled = true;
-    elements.btnCalcRouteDist.textContent = 'Berechne...';
+    elements.btnCalcRouteDist.textContent = '...';
 
     try {
-      // 1. Geocode origin
       const origRes = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(origin)}&format=json&limit=1`);
       const origData = await origRes.json();
-      if (!origData || origData.length === 0) throw new Error(`Startort "${origin}" nicht gefunden`);
+      if (!origData || origData.length === 0) throw new Error(`"${origin}" not found`);
 
-      // 2. Geocode destination
       const destRes = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(destination)}&format=json&limit=1`);
       const destData = await destRes.json();
-      if (!destData || destData.length === 0) throw new Error(`Zielort "${destination}" nicht gefunden`);
+      if (!destData || destData.length === 0) throw new Error(`"${destination}" not found`);
 
       const origCoord = [parseFloat(origData[0].lon), parseFloat(origData[0].lat)];
       const destCoord = [parseFloat(destData[0].lon), parseFloat(destData[0].lat)];
 
-      // 3. Query free OSRM driving service
       const osrmUrl = `https://router.project-osrm.org/route/v1/driving/${origCoord[0]},${origCoord[1]};${destCoord[0]},${destCoord[1]}?overview=false`;
       const routeRes = await fetch(osrmUrl);
       const routeData = await routeRes.json();
@@ -1661,28 +1888,27 @@
         const distKm = routeData.routes[0].distance / 1000.0;
         elements.inputDistance.value = distKm.toFixed(1);
         elements.routeCalcResultBadge.classList.remove('hidden');
-        elements.routeCalcResultBadge.textContent = `${distKm.toFixed(1)} km ermittelt`;
+        elements.routeCalcResultBadge.textContent = `${distKm.toFixed(1)} km`;
         calculateCosts(true);
-        showToast(`Route berechnet: ${distKm.toFixed(1)} km übernommen!`, 'success');
+        showToast(`${distKm.toFixed(1)} km`, 'success');
       } else {
-        throw new Error('Keine fahrbare Route gefunden');
+        throw new Error('No route found');
       }
     } catch (err) {
-      showToast(err.message || 'Routenberechnung fehlgeschlagen', 'error');
+      showToast(err.message || 'Routing error', 'error');
     } finally {
       elements.btnCalcRouteDist.disabled = false;
-      elements.btnCalcRouteDist.innerHTML = `<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg> <span>Distanz ermitteln</span>`;
+      elements.btnCalcRouteDist.innerHTML = `<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg> <span>${t('btnCalcDist')}</span>`;
     }
   }
 
   // ==========================================================================
-  // 11. SPRITPREISE & RADAR
+  // 13. SPRITPREISE & RADAR
   // ==========================================================================
   function openNearbyFuelRadar() {
     const active = getActiveProfile();
     const fuelType = active.fuelType || 'e10';
 
-    // Current representative market prices
     const basePrices = { e10: 1.719, e5: 1.779, diesel: 1.639 };
     const base = basePrices[fuelType] || 1.719;
 
@@ -1701,7 +1927,7 @@
       item.innerHTML = `
         <div>
           <div class="station-item__name">${st.name}</div>
-          <div class="station-item__distance">${st.dist} km entfernt • ${fuelType.toUpperCase()}</div>
+          <div class="station-item__distance">${st.dist} km • ${fuelType.toUpperCase()}</div>
         </div>
         <div class="station-item__price">${state.settings.currency || '€'}${st.price.toFixed(3)}</div>
       `;
@@ -1710,7 +1936,7 @@
         elements.inputFuelPrice.value = st.price.toFixed(3);
         elements.stationsModalOverlay.classList.remove('active');
         calculateCosts(true);
-        showToast(`Preis ${st.price.toFixed(3)} €/L übernommen!`, 'success');
+        showToast(`${st.price.toFixed(3)} €/L`, 'success');
       });
 
       elements.stationsListContainer.appendChild(item);
@@ -1720,7 +1946,7 @@
   }
 
   // ==========================================================================
-  // 12. FAHRZEUGE & PROFILE
+  // 14. FAHRZEUGE & PROFILE
   // ==========================================================================
   function setupProfiles() {
     elements.btnOpenNewProfileModal.addEventListener('click', () => openProfileModal(null));
@@ -1744,21 +1970,21 @@
       card.className = `profile-card ${isActive ? 'active' : ''}`;
 
       card.innerHTML = `
-        <div style="flex: 1;">
+        <div style="flex: 1; min-width: 0;">
           <div class="profile-card__name">
             <span>${escapeHtml(profile.name)}</span>
             ${isActive ? '<span class="badge-subtle" style="color:var(--accent-emerald);">Aktiv</span>' : ''}
           </div>
           <div class="profile-card__meta">
-            <span>🚗 ${escapeHtml(profile.vehicle || 'Fahrzeug')}</span>
-            <span>⛽ ${profile.consumption} L/100km (${profile.fuelType.toUpperCase()})</span>
+            <span>🚗 ${escapeHtml(profile.vehicle || 'PKW')}</span>
+            <span>⛽ ${profile.consumption} L/100km</span>
             <span>📏 ${(profile.costPerKm || 0.30).toFixed(2)} €/km</span>
           </div>
         </div>
-        <div style="display: flex; gap: 6px; align-items: center;">
-          ${!isActive ? '<button type="button" class="btn-secondary btn-sm btn-activate-profile">Aktivieren</button>' : ''}
-          <button type="button" class="btn-icon btn-edit-profile" title="Bearbeiten">✏️</button>
-          ${state.profiles.length > 1 ? '<button type="button" class="btn-icon btn-danger btn-del-profile" title="Löschen">✕</button>' : ''}
+        <div style="display: flex; gap: 4px; align-items: center; flex-shrink: 0;">
+          ${!isActive ? `<button type="button" class="btn-secondary btn-sm btn-activate-profile" style="height:30px; font-size:0.75rem;">${state.lang === 'de' ? 'Wählen' : 'Select'}</button>` : ''}
+          <button type="button" class="btn-icon btn-edit-profile" title="Edit">✏️</button>
+          ${state.profiles.length > 1 ? '<button type="button" class="btn-icon btn-danger btn-del-profile" title="Delete">✕</button>' : ''}
         </div>
       `;
 
@@ -1775,7 +2001,7 @@
           localStorage.setItem(STORAGE_KEYS.ACTIVE_PROFILE, profile.id);
           applyActiveProfileToCalc();
           renderProfilesList();
-          showToast(`Fahrzeug "${profile.name}" aktiviert!`, 'success');
+          showToast(`"${profile.name}" active`, 'success');
         });
       }
 
@@ -1790,7 +2016,6 @@
           saveProfiles();
           renderProfilesList();
           applyActiveProfileToCalc();
-          showToast('Fahrzeugprofil gelöscht', 'success');
         });
       }
 
@@ -1805,7 +2030,7 @@
     elements.modalProfileConsumption.value = profile ? profile.consumption : 6.2;
     elements.modalProfileFuelType.value = profile ? profile.fuelType : 'e10';
     elements.modalProfileCostPerKm.value = profile ? profile.costPerKm : 0.30;
-    elements.profileModalTitle.textContent = profile ? 'Fahrzeug bearbeiten' : 'Neues Fahrzeug';
+    elements.profileModalTitle.textContent = t('profileModalTitle');
     elements.profileModalOverlay.classList.add('active');
   }
 
@@ -1822,7 +2047,7 @@
     const costPerKm = parseFloat(elements.modalProfileCostPerKm.value) || 0.30;
 
     if (!name) {
-      showToast('Bitte Profilnamen eingeben', 'error');
+      showToast(state.lang === 'de' ? 'Bitte Namen eingeben' : 'Please enter a name', 'error');
       return;
     }
 
@@ -1854,11 +2079,11 @@
     applyActiveProfileToCalc();
     renderProfilesList();
     closeProfileModal();
-    showToast('Fahrzeugprofil gespeichert!', 'success');
+    showToast('Saved!', 'success');
   }
 
   // ==========================================================================
-  // 13. SETTINGS & APIS
+  // 15. SETTINGS & APIS
   // ==========================================================================
   function setupSettings() {
     elements.prefCurrency.value = state.settings.currency || '€';
@@ -1868,16 +2093,16 @@
       state.settings.currency = e.target.value;
       saveSettings();
       calculateCosts(false);
-      showToast('Währung aktualisiert', 'success');
+      applyLanguageToDOM();
+      showToast('Currency updated', 'success');
     });
 
     elements.prefFuelType.addEventListener('change', (e) => {
       state.settings.defaultFuelType = e.target.value;
       saveSettings();
-      showToast('Standard-Kraftstoff gespeichert', 'success');
+      showToast('Fuel grade saved', 'success');
     });
 
-    // APIs
     elements.settingGoogleMapsKey.value = state.settings.googleMapsApiKey || '';
     elements.settingTankerkoenigKey.value = state.settings.tankerkoenigApiKey || '';
 
@@ -1885,7 +2110,7 @@
       state.settings.googleMapsApiKey = elements.settingGoogleMapsKey.value.trim();
       saveSettings();
       updateApiStatusBadges();
-      showToast('Google Maps API-Key gespeichert', 'success');
+      showToast('Saved', 'success');
     });
 
     elements.btnClearMapsKey.addEventListener('click', () => {
@@ -1893,14 +2118,14 @@
       state.settings.googleMapsApiKey = '';
       saveSettings();
       updateApiStatusBadges();
-      showToast('Google Maps Key gelöscht', 'success');
+      showToast('Cleared', 'success');
     });
 
     elements.btnSaveTankerKey.addEventListener('click', () => {
       state.settings.tankerkoenigApiKey = elements.settingTankerkoenigKey.value.trim();
       saveSettings();
       updateApiStatusBadges();
-      showToast('Tankerkönig Key gespeichert', 'success');
+      showToast('Saved', 'success');
     });
 
     elements.btnClearTankerKey.addEventListener('click', () => {
@@ -1908,7 +2133,7 @@
       state.settings.tankerkoenigApiKey = '';
       saveSettings();
       updateApiStatusBadges();
-      showToast('Tankerkönig Key gelöscht', 'success');
+      showToast('Cleared', 'success');
     });
 
     elements.btnUseDemoTankerKey.addEventListener('click', () => {
@@ -1917,10 +2142,9 @@
       state.settings.tankerkoenigApiKey = demoKey;
       saveSettings();
       updateApiStatusBadges();
-      showToast('Demo-Key für Tankerkönig aktiviert!', 'success');
+      showToast('Demo Key active!', 'success');
     });
 
-    // Password visibility toggles
     elements.btnToggleMapsKeyVisibility.addEventListener('click', () => {
       elements.settingGoogleMapsKey.type = elements.settingGoogleMapsKey.type === 'password' ? 'text' : 'password';
     });
@@ -1928,7 +2152,6 @@
       elements.settingTankerkoenigKey.type = elements.settingTankerkoenigKey.type === 'password' ? 'text' : 'password';
     });
 
-    // Backup & Restore
     elements.btnExportAllJson.addEventListener('click', exportFullBackupJson);
     elements.fileImportJson.addEventListener('change', importBackupJson);
     elements.btnResetAllData.addEventListener('click', resetAllData);
@@ -1944,17 +2167,17 @@
     const hasMaps = !!state.settings.googleMapsApiKey;
     const hasTanker = !!state.settings.tankerkoenigApiKey;
 
-    elements.googleMapsStatus.textContent = hasMaps ? 'Aktiv' : 'Nicht konfiguriert';
+    elements.googleMapsStatus.textContent = hasMaps ? (state.lang === 'de' ? 'Aktiv' : 'Active') : (state.lang === 'de' ? 'Inaktiv' : 'Inactive');
     elements.googleMapsStatus.className = `api-key-status ${hasMaps ? 'active' : 'missing'}`;
 
-    elements.tankerkoenigStatus.textContent = hasTanker ? 'Aktiv' : 'Demo-Modus';
+    elements.tankerkoenigStatus.textContent = hasTanker ? (state.lang === 'de' ? 'Aktiv' : 'Active') : 'Demo';
     elements.tankerkoenigStatus.className = `api-key-status ${hasTanker ? 'active' : 'missing'}`;
 
     if (hasMaps || hasTanker) {
-      elements.apiStatusSummaryBadge.textContent = 'Aktiviert';
+      elements.apiStatusSummaryBadge.textContent = state.lang === 'de' ? 'Aktiv' : 'Active';
       elements.apiStatusSummaryBadge.style.color = 'var(--accent-emerald)';
     } else {
-      elements.apiStatusSummaryBadge.textContent = 'Optional';
+      elements.apiStatusSummaryBadge.textContent = state.lang === 'de' ? 'Optional' : 'Optional';
       elements.apiStatusSummaryBadge.style.color = 'var(--text-muted)';
     }
   }
@@ -1979,7 +2202,7 @@
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
-    showToast('Backup erfolgreich heruntergeladen! 📥', 'success');
+    showToast('Backup downloaded! 📥', 'success');
   }
 
   function importBackupJson(e) {
@@ -2004,16 +2227,19 @@
 
         renderAllViews();
         applyActiveProfileToCalc();
-        showToast('Backup erfolgreich wiederhergestellt! 🚀', 'success');
+        showToast('Restored! 🚀', 'success');
       } catch (err) {
-        showToast('Ungültige Backup-Datei', 'error');
+        showToast('Invalid backup file', 'error');
       }
     };
     reader.readAsText(file);
   }
 
   function resetAllData() {
-    if (confirm('Möchtest du wirklich alle gespeicherten Touren, Orte und Einstellungen löschen? Dies kann nicht rückgängig gemacht werden.')) {
+    const confirmMsg = state.lang === 'de'
+      ? 'Möchtest du wirklich alle Daten löschen? Dies kann nicht rückgängig gemacht werden.'
+      : 'Reset all data? This cannot be undone.';
+    if (confirm(confirmMsg)) {
       localStorage.clear();
       state.profiles = [...DEFAULT_PROFILES];
       state.activeProfileId = state.profiles[0].id;
@@ -2028,7 +2254,7 @@
 
       renderAllViews();
       applyActiveProfileToCalc();
-      showToast('Alle Daten wurden zurückgesetzt', 'success');
+      showToast('Reset complete', 'success');
     }
   }
 
@@ -2039,7 +2265,7 @@
   }
 
   // ==========================================================================
-  // 14. TOAST NOTIFICATIONS & UTILS
+  // 16. TOAST & HELPERS
   // ==========================================================================
   let toastTimeout = null;
   function showToast(msg, type = 'info') {
@@ -2050,7 +2276,7 @@
     clearTimeout(toastTimeout);
     toastTimeout = setTimeout(() => {
       elements.appToast.className = 'toast';
-    }, 2800);
+    }, 2400);
   }
 
   function escapeHtml(str) {
@@ -2063,9 +2289,6 @@
       .replace(/'/g, '&#039;');
   }
 
-  // ==========================================================================
-  // 15. SERVICE WORKER
-  // ==========================================================================
   function registerServiceWorker() {
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
@@ -2076,6 +2299,5 @@
     }
   }
 
-  // Run app
   document.addEventListener('DOMContentLoaded', init);
 })();
