@@ -325,6 +325,11 @@
     setupSettings();
     setupCollapsibles();
 
+    const crmLink = document.querySelector('.app-header__crm-link');
+    if (crmLink && window.location.hostname.includes('github.io')) {
+      crmLink.href = '/mathecoach/admin.html';
+    }
+
     const today = new Date().toISOString().split('T')[0];
     if (elements.inputTourDate) elements.inputTourDate.value = today;
 
