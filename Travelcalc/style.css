@@ -189,6 +189,47 @@ body {
   color: #ffffff;
 }
 
+/* CRM Header Link */
+.app-header__crm-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(13, 148, 136, 0.16);
+  border: 1px solid rgba(13, 148, 136, 0.4);
+  color: #2dd4bf;
+  text-decoration: none;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 4px 9px;
+  border-radius: var(--radius-full);
+  transition: var(--transition);
+}
+.app-header__crm-link:hover {
+  background: rgba(13, 148, 136, 0.3);
+  border-color: #2dd4bf;
+  color: #ffffff;
+}
+
+/* CRM Student Pills */
+.crm-student-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--bg-surface-elevated);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-secondary);
+  font-size: 0.75rem;
+  padding: 3px 8px;
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  transition: var(--transition);
+}
+.crm-student-pill:hover, .crm-student-pill.active {
+  border-color: #2dd4bf;
+  color: #2dd4bf;
+  background: rgba(13, 148, 136, 0.1);
+}
+
 /* Vehicle Badge */
 .app-header__profile-badge {
   display: flex;

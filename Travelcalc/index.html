@@ -40,6 +40,11 @@
     </div>
 
     <div class="app-header__actions">
+      <!-- MatheCoach CRM Link -->
+      <a href="../../admin.html" class="app-header__crm-link" title="Zum MatheCoach CRM Dashboard">
+        <span>∑ CRM</span>
+      </a>
+
       <!-- Language Switcher Pill -->
       <div class="lang-switcher" id="langSwitcher" role="group" aria-label="Language">
         <button type="button" class="lang-btn active" data-lang="de" id="langDe">DE</button>
@@ -85,11 +90,15 @@
         </div>
 
         <div class="form-group">
-          <label class="form-label" for="inputCustomer" data-i18n="customerLabel">Kunde / Schüler / Firma</label>
+          <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px;">
+            <label class="form-label" for="inputCustomer" data-i18n="customerLabel" style="margin-bottom: 0;">Kunde / Schüler / Firma</label>
+            <span id="crmStudentBadge" style="font-size: 0.72rem; color: #2dd4bf; font-weight: 600; display: none;">✓ CRM-Schüler aktiv</span>
+          </div>
           <div class="form-input-wrap">
             <input type="text" id="inputCustomer" class="form-input" placeholder="z. B. Max Mustermann, Firma ABC..." list="customerDatalist">
             <datalist id="customerDatalist"></datalist>
           </div>
+          <div id="crmStudentQuickList" style="display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px;"></div>
         </div>
 
         <div class="form-grid-2">
@@ -803,6 +812,8 @@
     <span id="toastMessage">Aktion erfolgreich</span>
   </div>
 
+  <!-- MatheCoach Shared Database Layer -->
+  <script src="../../shared-db.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

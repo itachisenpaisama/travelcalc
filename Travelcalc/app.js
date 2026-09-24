@@ -740,6 +740,31 @@
       inp.addEventListener('input', () => calculateCosts(false));
     });
 
+    if (elements.inputCustomer) {
+      const handleCustomerCheck = () => {
+        const val = elements.inputCustomer.value.trim();
+        const badge = document.getElementById('crmStudentBadge');
+        if (!val || !window.MatheDB || !MatheDB.Students) {
+          if (badge) badge.style.display = 'none';
+          return;
+        }
+        const student = MatheDB.Students.getAll().find((s) => s.name && s.name.toLowerCase() === val.toLowerCase());
+        if (student) {
+          if (badge) badge.style.display = 'inline';
+          if (!elements.inputTourName.value || elements.inputTourName.value.startsWith('Mathe-Nachhilfe')) {
+            elements.inputTourName.value = `Mathe-Nachhilfe ${student.name}`;
+          }
+          if (student.address && elements.routeDestination) {
+            elements.routeDestination.value = student.address;
+          }
+        } else {
+          if (badge) badge.style.display = 'none';
+        }
+      };
+      elements.inputCustomer.addEventListener('input', handleCustomerCheck);
+      elements.inputCustomer.addEventListener('change', handleCustomerCheck);
+    }
+
     elements.toggleRoundTrip.addEventListener('change', () => {
       updateRoundTripBadge();
       calculateCosts(false);
@@ -1042,6 +1067,34 @@
 
     state.tours.unshift(newTour);
     saveTours();
+
+    // Live Sync to MatheCoach CRM Database
+    if (window.MatheDB && MatheDB.Trips) {
+      try {
+        const allStudents = MatheDB.Students.getAll();
+        const matchedStudent = allStudents.find((s) => 
+          s.name && (s.name.toLowerCase() === customer.toLowerCase() ||
+          customer.toLowerCase().includes(s.name.toLowerCase()))
+        );
+
+        MatheDB.Trips.save({
+          id: 'trip_' + newTour.id,
+          studentId: matchedStudent ? matchedStudent.id : null,
+          studentName: matchedStudent ? matchedStudent.name : customer,
+          date: tourDate,
+          purpose: tourName,
+          origin: (state.settings && state.settings.homeLocation && state.settings.homeLocation.name) ? state.settings.homeLocation.name : 'Dietzenbach',
+          destination: matchedStudent ? (matchedStudent.address || customer) : customer,
+          distanceKm: data.effectiveDistance,
+          isRoundTrip: data.isRoundTrip,
+          ratePerKm: data.costPerKm,
+          totalCost: data.totalCost
+        });
+      } catch (err) {
+        console.warn('CRM sync error:', err);
+      }
+    }
+
     updateCustomerDatalist();
     showToast(state.lang === 'de' ? `Tour für "${customer}" gespeichert! 📁` : `Trip for "${customer}" saved! 📁`, 'success');
 
@@ -1382,6 +1435,10 @@
       card.querySelector('.btn-delete-tour').addEventListener('click', () => {
         state.tours = state.tours.filter((t) => t.id !== tour.id);
         saveTours();
+        if (window.MatheDB && MatheDB.Trips) {
+          MatheDB.Trips.delete('trip_' + tour.id);
+          MatheDB.Trips.delete(tour.id);
+        }
         renderAccountingView();
         showToast(state.lang === 'de' ? 'Tour gelöscht' : 'Trip deleted', 'success');
       });
@@ -1818,6 +1875,49 @@
   function updateCustomerDatalist() {
     if (!elements.customerDatalist) return;
     const set = new Set();
+
+    // Ingest CRM Students if MatheDB is present
+    if (window.MatheDB && MatheDB.Students) {
+      try {
+        const crmStudents = MatheDB.Students.getAll({ activeOnly: true });
+        crmStudents.forEach((s) => { if (s.name) set.add(s.name); });
+
+        const quickList = document.getElementById('crmStudentQuickList');
+        if (quickList) {
+          if (crmStudents.length > 0) {
+            quickList.innerHTML = `<span style="font-size:0.7rem; color:var(--text-muted); align-self:center; margin-right:2px;">CRM:</span>` +
+              crmStudents.slice(0, 5).map((s) => `
+                <button type="button" class="crm-student-pill" data-student-id="${s.id}">
+                  ${escapeHtml(s.name)}
+                </button>
+              `).join('');
+
+            quickList.querySelectorAll('.crm-student-pill').forEach((btn) => {
+              btn.addEventListener('click', () => {
+                const sId = btn.getAttribute('data-student-id');
+                const student = MatheDB.Students.getById(sId);
+                if (student) {
+                  elements.inputCustomer.value = student.name;
+                  elements.inputTourName.value = `Mathe-Nachhilfe ${student.name}`;
+                  if (student.address && elements.routeDestination) {
+                    elements.routeDestination.value = student.address;
+                  }
+                  const badge = document.getElementById('crmStudentBadge');
+                  if (badge) badge.style.display = 'inline';
+                  calculateCosts(false);
+                  showToast(`Schüler "${student.name}" geladen`, 'success');
+                }
+              });
+            });
+          } else {
+            quickList.innerHTML = '';
+          }
+        }
+      } catch (e) {
+        console.warn('Error loading CRM students into datalist:', e);
+      }
+    }
+
     state.tours.forEach((t) => { if (t.customer) set.add(t.customer); });
     state.savedRoutes.forEach((r) => { if (r.customer) set.add(r.customer); });
     elements.customerDatalist.innerHTML = Array.from(set).map((c) => `<option value="${escapeHtml(c)}">`).join('');
