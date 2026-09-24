@@ -1,11 +1,11 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="de">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>Travel Cost Calculator — Smart Trip Expense & Fuel Estimation</title>
-  <meta name="description" content="Quickly calculate travel and trip driving costs. Accurate fuel expenses, flat rates, per-kilometer charges, multiple vehicle profiles, and real-time gas prices.">
-  <meta name="theme-color" content="#0b0f1a">
+  <title>TravelCalc — Fahrtkosten & Fahrtenbuch für Kunden & Buchhaltung</title>
+  <meta name="description" content="Minimalistischer Fahrtkostenrechner mit gestaffelter Kilometerpauschale, Kundenverwaltung, Monatsübersicht und Buchhaltungs-Export.">
+  <meta name="theme-color" content="#0b0f19">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="TravelCalc">
@@ -26,441 +26,576 @@
 
   <!-- Top App Header -->
   <header class="app-header">
-    <div class="app-header__logo" id="headerLogo">
-      <div class="app-header__logo-icon">🚗</div>
-      <span>TravelCalc</span>
+    <div class="app-header__logo" id="headerLogo" role="button" tabindex="0" title="Zum Rechner">
+      <div class="app-header__logo-icon">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/>
+          <circle cx="7" cy="17" r="2"/>
+          <circle cx="17" cy="17" r="2"/>
+        </svg>
+      </div>
+      <div class="app-header__logo-text">
+        <span class="app-header__brand">TravelCalc</span>
+        <span class="app-header__tagline">Fahrtkosten & Buchhaltung</span>
+      </div>
     </div>
-    <button class="app-header__profile-badge" id="activeProfileBadge" title="Click to switch profile">
-      <div class="app-header__profile-dot"></div>
-      <span id="activeProfileBadgeName">Default Car</span>
-    </button>
+
+    <div class="app-header__actions">
+      <!-- Active Vehicle Badge -->
+      <button class="app-header__profile-badge" id="activeProfileBadge" title="Fahrzeug wechseln">
+        <span class="app-header__profile-dot"></span>
+        <span id="activeProfileBadgeName">Standard-Fahrzeug</span>
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>
+      </button>
+    </div>
   </header>
 
   <!-- Main Views Container -->
   <main class="app-content">
 
-    <!-- ==================== VIEW 1: CALCULATOR ==================== -->
+    <!-- ==================== VIEW 1: RECHNER (CALCULATOR) ==================== -->
     <section class="view active" id="view-calculator">
-      <h1 class="section-title">Trip Calculator</h1>
-      <p class="section-subtitle">Calculate total travel costs with partial breakdowns</p>
-
-      <!-- Distance Card -->
-      <div class="glass-card">
-        <div class="glass-card__title">
-          <div class="glass-card__title-icon route">📏</div>
-          <span>Distance & Route</span>
+      
+      <!-- Top Quick Preset Bar -->
+      <div class="quick-preset-bar">
+        <div class="quick-preset-label">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>
+          <span>Schnellauswahl:</span>
         </div>
-
-        <div class="form-group">
-          <label class="form-label" for="inputDistance">Trip Distance</label>
-          <div class="form-input-group">
-            <input type="number" id="inputDistance" class="form-input" placeholder="e.g. 75" step="0.1" min="0" inputmode="decimal">
-            <span class="form-input-group__suffix">km</span>
-          </div>
-        </div>
-
-        <div class="toggle-row">
-          <div class="toggle-row__label">Round Trip (Return Journey)</div>
-          <label class="toggle-switch">
-            <input type="checkbox" id="toggleRoundTrip">
-            <span class="toggle-switch__slider"></span>
-          </label>
-        </div>
+        <select id="quickRouteSelect" class="form-select quick-route-select">
+          <option value="">Gespeicherte Route laden...</option>
+        </select>
+        <button type="button" class="btn-ghost btn-sm" id="btnGoToRoutes" title="Routen & Orte verwalten">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+          <span>Orte</span>
+        </button>
       </div>
 
-      <!-- Fuel & Consumption Card -->
-      <div class="glass-card">
-        <div class="glass-card__title">
-          <div class="glass-card__title-icon fuel">⛽</div>
-          <span>Fuel & Consumption</span>
+      <!-- Card: Tour & Kunde -->
+      <div class="clean-card">
+        <div class="clean-card__header">
+          <div class="clean-card__title">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            <span>Kunde & Tourdetails</span>
+          </div>
+          <span class="clean-card__hint">Optional für Buchhaltung</span>
         </div>
 
         <div class="form-row">
-          <div class="form-group">
-            <label class="form-label" for="inputConsumption">Avg. Consumption</label>
+          <div class="form-group flex-2">
+            <label class="form-label" for="inputCustomer">Kunde / Schüler / Firma</label>
             <div class="form-input-group">
-              <input type="number" id="inputConsumption" class="form-input" placeholder="6.5" step="0.1" min="0" inputmode="decimal">
-              <span class="form-input-group__suffix">L/100km</span>
+              <input type="text" id="inputCustomer" class="form-input" placeholder="z. B. Max Mustermann, Schüler A..." list="customerDatalist">
+              <datalist id="customerDatalist"></datalist>
             </div>
           </div>
 
-          <div class="form-group">
-            <label class="form-label" for="inputFuelPrice">Fuel Price</label>
-            <div class="form-input-group">
-              <input type="number" id="inputFuelPrice" class="form-input" placeholder="1.75" step="0.001" min="0" inputmode="decimal">
-              <span class="form-input-group__suffix">€/L</span>
-            </div>
+          <div class="form-group flex-1">
+            <label class="form-label" for="inputTourDate">Datum</label>
+            <input type="date" id="inputTourDate" class="form-input">
           </div>
         </div>
 
-        <!-- Live Fuel Price Button -->
-        <div class="fetch-fuel-section">
-          <button type="button" class="fetch-fuel-btn" id="btnFetchFuel">
-            <span id="btnFetchFuelIcon">🔄</span>
-            <span id="btnFetchFuelText">Get Live Fuel Prices Nearby</span>
+        <div class="form-group" style="margin-bottom: 0;">
+          <label class="form-label" for="inputTourName">Tourbezeichnung / Notiz</label>
+          <input type="text" id="inputTourName" class="form-input" placeholder="z. B. Mathe-Nachhilfe Oberstufe, Vor-Ort-Termin...">
+        </div>
+      </div>
+
+      <!-- Card: Strecke & Distanz -->
+      <div class="clean-card">
+        <div class="clean-card__header">
+          <div class="clean-card__title">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
+            <span>Fahrtstrecke</span>
+          </div>
+          <button type="button" class="btn-link" id="btnToggleRoutePlanner">
+            <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20M2 12h20"/></svg>
+            <span id="toggleRoutePlannerText">Route berechnen (Start / Ziel)</span>
           </button>
         </div>
-      </div>
 
-      <!-- Surcharges & Extra Costs Card -->
-      <div class="glass-card">
-        <div class="glass-card__title">
-          <div class="glass-card__title-icon flat">📦</div>
-          <span>Surcharges & Rates</span>
-        </div>
+        <!-- Optional Expandable Route Distance Finder -->
+        <div class="route-finder-box hidden" id="routeFinderBox">
+          <div class="form-row">
+            <div class="form-group flex-1">
+              <div class="label-with-action">
+                <label class="form-label" for="routeOrigin">Startpunkt</label>
+                <select id="quickOriginSelect" class="quick-place-mini" title="Aus Orten wählen">
+                  <option value="">Ort wählen...</option>
+                </select>
+              </div>
+              <div class="form-input-group">
+                <input type="text" id="routeOrigin" class="form-input" placeholder="z. B. Dietzenbach oder Zuhause">
+                <button type="button" class="form-input-group__btn" id="btnCurrentLocation" title="Aktuellen GPS-Standort abrufen">
+                  <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/><line x1="12" y1="2" x2="12" y2="5"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="2" y1="12" x2="5" y2="12"/><line x1="19" y1="12" x2="22" y2="12"/></svg>
+                </button>
+              </div>
+            </div>
 
-        <div class="form-group">
-          <label class="form-label" for="inputCostPerKm">Cost Per Kilometer</label>
-          <div class="form-input-group">
-            <input type="number" id="inputCostPerKm" class="form-input" placeholder="0.30" step="0.01" min="0" inputmode="decimal">
-            <span class="form-input-group__suffix">€/km</span>
+            <div class="form-group flex-1">
+              <div class="label-with-action">
+                <label class="form-label" for="routeDestination">Zielort</label>
+                <select id="quickDestSelect" class="quick-place-mini" title="Aus Orten wählen">
+                  <option value="">Ort wählen...</option>
+                </select>
+              </div>
+              <input type="text" id="routeDestination" class="form-input" placeholder="z. B. Frankfurt oder Kunde...">
+            </div>
+          </div>
+
+          <div style="display: flex; gap: 8px; align-items: center; justify-content: flex-end; margin-top: 8px;">
+            <button type="button" class="btn-secondary btn-sm" id="btnCalcRouteDist">
+              <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+              <span>Distanz ermitteln</span>
+            </button>
+            <span id="routeCalcResultBadge" class="badge-subtle hidden">0.0 km</span>
           </div>
         </div>
 
-        <div class="form-row">
-          <div class="form-group">
-            <label class="form-label" for="inputFlatThreshold">Flat Rate Min Distance</label>
+        <!-- Direct Distance Input & Round Trip Toggle -->
+        <div class="form-row" style="align-items: center; margin-top: 12px;">
+          <div class="form-group flex-1">
+            <label class="form-label" for="inputDistance">Distanz (einfache Fahrt)</label>
             <div class="form-input-group">
-              <input type="number" id="inputFlatThreshold" class="form-input" placeholder="50" step="1" min="0" inputmode="numeric">
+              <input type="number" id="inputDistance" class="form-input" placeholder="z. B. 25" step="0.1" min="0" inputmode="decimal">
               <span class="form-input-group__suffix">km</span>
             </div>
           </div>
 
-          <div class="form-group">
-            <label class="form-label" for="inputFlatAmount">Flat Rate Surcharge</label>
-            <div class="form-input-group">
-              <input type="number" id="inputFlatAmount" class="form-input" placeholder="15.00" step="0.50" min="0" inputmode="decimal">
-              <span class="form-input-group__suffix">€</span>
+          <div class="toggle-card flex-1">
+            <div class="toggle-card__info">
+              <div class="toggle-card__title">Hin- & Rückfahrt</div>
+              <div class="toggle-card__desc" id="roundTripBadge">Einfach: 0.0 km</div>
             </div>
+            <label class="toggle-switch">
+              <input type="checkbox" id="toggleRoundTrip" checked>
+              <span class="toggle-switch__slider"></span>
+            </label>
           </div>
         </div>
       </div>
 
-      <!-- Action Button -->
-      <button type="button" class="btn-primary" id="btnCalculate">
-        Calculate Total Cost
-      </button>
-
-      <!-- Calculation Results Panel -->
-      <div class="results-panel" id="resultsPanel">
-        <div class="glass-card">
-          <div class="glass-card__title">
-            <div class="glass-card__title-icon cost">📊</div>
-            <span>Cost Breakdown</span>
-          </div>
-
-          <div class="result-row">
-            <div class="result-row__left">
-              <span class="result-row__icon">🛣️</span>
-              <div>
-                <div class="result-row__label">Total Distance</div>
-                <div class="result-row__detail" id="resDistanceDetail">0 km one-way</div>
-              </div>
-            </div>
-            <div class="result-row__value" id="resDistance">0.0 km</div>
-          </div>
-
-          <div class="result-row">
-            <div class="result-row__left">
-              <span class="result-row__icon">⛽</span>
-              <div>
-                <div class="result-row__label">Fuel Cost</div>
-                <div class="result-row__detail" id="resFuelDetail">0.00 L needed</div>
-              </div>
-            </div>
-            <div class="result-row__value" id="resFuelCost">€0.00</div>
-          </div>
-
-          <div class="result-row">
-            <div class="result-row__left">
-              <span class="result-row__icon">📏</span>
-              <div>
-                <div class="result-row__label">Distance Charge</div>
-                <div class="result-row__detail" id="resKmDetail">€0.00 / km</div>
-              </div>
-            </div>
-            <div class="result-row__value" id="resKmCost">€0.00</div>
-          </div>
-
-          <div class="result-row">
-            <div class="result-row__left">
-              <span class="result-row__icon">📦</span>
-              <div>
-                <div class="result-row__label">Flat Rate Fee</div>
-                <div class="result-row__detail" id="resFlatDetail">Threshold not reached</div>
-              </div>
-            </div>
-            <div class="result-row__value" id="resFlatCost">€0.00</div>
-          </div>
-
-          <div class="result-row total">
-            <div class="result-row__label">Total Estimated Cost</div>
-            <div class="result-row__value" id="resTotalCost">€0.00</div>
-          </div>
-
-          <div style="display: flex; gap: 8px; margin-top: 16px; flex-wrap: wrap;">
-            <button type="button" class="btn-secondary" id="btnSaveCalc" style="flex: 1; border-color: rgba(0, 232, 143, 0.3); color: var(--accent-secondary);">
-              💾 Save
-            </button>
-            <button type="button" class="btn-secondary" id="btnCopySummary" style="flex: 1;">
-              📋 Copy
-            </button>
-            <button type="button" class="btn-secondary" id="btnResetCalc" style="width: auto; padding: 0 16px;">
-              🔄 Reset
-            </button>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ==================== VIEW 2: ROUTE PLANNER ==================== -->
-    <section class="view" id="view-route">
-      <h1 class="section-title">Route Distance</h1>
-      <p class="section-subtitle">Enter start & destination to determine route distance automatically</p>
-
-      <div class="glass-card">
-        <div class="glass-card__title">
-          <div class="glass-card__title-icon route">📍</div>
-          <span>Trip Locations</span>
-        </div>
-
-        <div class="form-group">
-          <label class="form-label" for="routeOrigin">Starting Point (Origin)</label>
-          <div class="form-input-group">
-            <input type="text" id="routeOrigin" class="form-input" placeholder="e.g. Frankfurt Hauptbahnhof or City">
-            <button type="button" class="form-input-group__btn" id="btnCurrentLocation" title="Use current GPS location">🎯</button>
+      <!-- Card: Gestaffelte Pauschale & Kilometerpreis -->
+      <div class="clean-card">
+        <div class="clean-card__header">
+          <div class="clean-card__title">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+            <span>Pauschalen & Kilometerabrechnung</span>
           </div>
         </div>
 
         <div class="form-group">
-          <label class="form-label" for="routeDestination">Destination</label>
+          <label class="form-label" for="inputCostPerKm">Kilometerpauschale (pro gefahrenem km)</label>
           <div class="form-input-group">
-            <input type="text" id="routeDestination" class="form-input" placeholder="e.g. Cologne Cathedral, Berlin, Munich">
+            <input type="number" id="inputCostPerKm" class="form-input" placeholder="0.30" step="0.01" min="0" inputmode="decimal">
+            <span class="form-input-group__suffix">€ / km</span>
           </div>
+          <span class="form-subtext">Gesetzlicher Standard oder vereinbarter Abrechnungssatz</span>
         </div>
 
-        <button type="button" class="btn-primary" id="btnCalculateRoute">
-          🔍 Find Distance & Route
-        </button>
-
-        <!-- Route Results Display -->
-        <div id="routeResultsCard" class="hidden" style="margin-top: 20px;">
-          <div class="route-info-bar">
-            <div class="route-info-chip">
-              <div class="route-info-chip__value" id="routeDistanceValue">0 km</div>
-              <div class="route-info-chip__label">Driving Distance</div>
+        <!-- Tiered Pricing Section (Gestaffelte Pauschale) -->
+        <div class="tiered-pricing-box">
+          <div class="tiered-pricing-header">
+            <div>
+              <div class="tiered-pricing-title">Gestaffelte Entfernungspauschale</div>
+              <div class="tiered-pricing-sub">Feste Beträge nach erreichten Kilometern (z. B. ab 20 km = 10 €, ab 40 km = 20 €)</div>
             </div>
-            <div class="route-info-chip">
-              <div class="route-info-chip__value" id="routeDurationValue">0 min</div>
-              <div class="route-info-chip__label">Est. Travel Time</div>
-            </div>
+            <label class="toggle-switch">
+              <input type="checkbox" id="toggleTieredPricing" checked>
+              <span class="toggle-switch__slider"></span>
+            </label>
           </div>
 
-          <div style="margin-top: 14px; display: flex; gap: 8px;">
-            <button type="button" class="btn-primary" id="btnApplyRouteToCalc" style="margin-top: 0; flex: 1;">
-              ⚡ Apply Distance & Calculate Costs
+          <div id="tieredPricingContent" class="tiered-pricing-content">
+            <!-- Active Tier Indicator Badge -->
+            <div class="active-tier-banner" id="activeTierBanner">
+              <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+              <span id="activeTierText">Keine Staffelstufe erreicht</span>
+            </div>
+
+            <!-- Tiers List -->
+            <div class="tiers-list" id="tiersListContainer">
+              <!-- Injected dynamically via JS -->
+            </div>
+
+            <button type="button" class="btn-ghost btn-sm" id="btnAddTier">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              <span>Weitere Stufe hinzufügen</span>
             </button>
           </div>
         </div>
       </div>
 
-      <!-- Maps Sync Info Card -->
-      <div class="glass-card" style="margin-top: 14px;">
-        <div class="glass-card__title">
-          <div class="glass-card__title-icon cost">ℹ️</div>
-          <span>Routing & Google Maps Sync</span>
+      <!-- Card: Kraftstoff & Verbrauch (Einklappbar) -->
+      <div class="clean-card collapsible-card" id="cardFuel">
+        <div class="clean-card__header collapsible-trigger" id="fuelHeaderTrigger" role="button" tabindex="0">
+          <div class="clean-card__title">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 2v20h18"/><path d="M14 6v6a2 2 0 0 0 2 2h2V4h-2a2 2 0 0 0-2 2z"/></svg>
+            <span>Kraftstoff & Verbrauch (Optional)</span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <span class="badge-subtle" id="fuelSummaryMini">Aus Profil</span>
+            <svg class="chevron-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>
+          </div>
         </div>
-        <p style="font-size: 0.82rem; color: var(--text-secondary); line-height: 1.5;">
-          This app can utilize high-precision routing via <strong>Google Maps Distance Matrix</strong>. If no Google API key is configured yet, the app provides smart routing calculations automatically via open geospatial routing so you can start right away!
-        </p>
-        <button type="button" class="btn-secondary btn-small" id="btnOpenMapsSettings" style="margin-top: 12px;">
-          ⚙️ Configure Google Maps API Key
-        </button>
+
+        <div class="collapsible-body" id="fuelCollapsibleBody">
+          <div class="form-row" style="margin-top: 12px;">
+            <div class="form-group flex-1">
+              <label class="form-label" for="inputConsumption">Durchschnittsverbrauch</label>
+              <div class="form-input-group">
+                <input type="number" id="inputConsumption" class="form-input" placeholder="6.5" step="0.1" min="0" inputmode="decimal">
+                <span class="form-input-group__suffix">L / 100km</span>
+              </div>
+            </div>
+
+            <div class="form-group flex-1">
+              <label class="form-label" for="inputFuelPrice">Spritpreis</label>
+              <div class="form-input-group">
+                <input type="number" id="inputFuelPrice" class="form-input" placeholder="1.75" step="0.001" min="0" inputmode="decimal">
+                <span class="form-input-group__suffix">€ / L</span>
+              </div>
+            </div>
+          </div>
+
+          <div style="display: flex; justify-content: flex-end; margin-top: 4px;">
+            <button type="button" class="btn-ghost btn-sm" id="btnFetchFuel">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+              <span>Live-Spritpreis Radar öffnen</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Calculation Results Summary Panel -->
+      <div class="results-card" id="resultsPanel">
+        <div class="results-card__header">
+          <span class="results-card__title">Kalkulierte Fahrtkosten</span>
+          <span class="results-badge" id="resDistanceBadge">0.0 km Gesamt</span>
+        </div>
+
+        <div class="results-total-row">
+          <div class="results-total-label">Gesamtbetrag der Tour</div>
+          <div class="results-total-val" id="resTotalCost">0,00 €</div>
+        </div>
+
+        <!-- Breakdown List -->
+        <div class="results-breakdown">
+          <div class="breakdown-item">
+            <span class="breakdown-item__name">Gefahrene Strecke:</span>
+            <span class="breakdown-item__val" id="resDistanceDetail">0.0 km</span>
+          </div>
+          <div class="breakdown-item">
+            <span class="breakdown-item__name">Kilometerpauschale:</span>
+            <span class="breakdown-item__val" id="resKmCost">0,00 €</span>
+          </div>
+          <div class="breakdown-item">
+            <span class="breakdown-item__name">Gestaffelte Pauschale:</span>
+            <span class="breakdown-item__val" id="resFlatCost">0,00 €</span>
+          </div>
+          <div class="breakdown-item">
+            <span class="breakdown-item__name">Kraftstoffanteil:</span>
+            <span class="breakdown-item__val" id="resFuelCost">0,00 €</span>
+          </div>
+        </div>
+
+        <!-- Primary Action Buttons -->
+        <div class="results-actions">
+          <button type="button" class="btn-primary" id="btnSaveToLogbook">
+            <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+            <span>Tour im Fahrtenbuch speichern</span>
+          </button>
+          <div class="results-actions__secondary">
+            <button type="button" class="btn-secondary btn-sm" id="btnCopySummary" title="Zusammenfassung in Zwischenablage kopieren">
+              <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+              <span>Kopieren</span>
+            </button>
+            <button type="button" class="btn-secondary btn-sm" id="btnResetCalc" title="Zurücksetzen">
+              <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+              <span>Neu</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ==================== VIEW 2: FAHRTENBUCH & BUCHHALTUNG ==================== -->
+    <section class="view" id="view-accounting">
+      <div class="view-header">
+        <div>
+          <h1 class="view-title">Fahrtenbuch & Buchhaltung</h1>
+          <p class="view-subtitle">Monatsordner, Statistiken und Belege für deine Kundenabrechnung</p>
+        </div>
+        <div class="view-header__actions">
+          <button type="button" class="btn-secondary btn-sm" id="btnPrintMonthReport">
+            <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+            <span>Monatsbericht drucken / PDF</span>
+          </button>
+          <button type="button" class="btn-secondary btn-sm" id="btnExportMonthCsv">
+            <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            <span>CSV Export</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Month Folders Navigation Strip -->
+      <div class="month-folder-strip" id="monthFolderStrip">
+        <!-- Injected via JS: [ Alle ] [ September 2026 ] [ August 2026 ] ... -->
+      </div>
+
+      <!-- Monthly Accounting KPI Cards -->
+      <div class="kpi-grid">
+        <div class="kpi-card">
+          <div class="kpi-card__label">Gesamte Strecke</div>
+          <div class="kpi-card__val" id="kpiTotalKm">0,0 km</div>
+          <div class="kpi-card__meta" id="kpiTripsCount">0 Fahrten</div>
+        </div>
+        <div class="kpi-card highlight">
+          <div class="kpi-card__label">Gesamtbetrag</div>
+          <div class="kpi-card__val" id="kpiTotalCost">0,00 €</div>
+          <div class="kpi-card__meta" id="kpiAvgPerTrip">Ø 0,00 € / Fahrt</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-card__label">Pauschalen & Staffeln</div>
+          <div class="kpi-card__val" id="kpiSurcharges">0,00 €</div>
+          <div class="kpi-card__meta">Km-Satz + Staffelung</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-card__label">Kraftstoffanteil</div>
+          <div class="kpi-card__val" id="kpiFuelTotal">0,00 €</div>
+          <div class="kpi-card__meta" id="kpiFuelLiters">0,0 L verbraucht</div>
+        </div>
+      </div>
+
+      <!-- Customer Breakdown Box for the Month -->
+      <div class="clean-card" id="customerBreakdownCard">
+        <div class="clean-card__header">
+          <div class="clean-card__title">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            <span>Kundenübersicht des Monats</span>
+          </div>
+          <span class="clean-card__hint" id="activeCustomerFilterHint">Klick zum Filtern</span>
+        </div>
+        <div class="customer-chips-grid" id="customerChipsContainer">
+          <!-- Injected via JS -->
+        </div>
+      </div>
+
+      <!-- Tours Search & Filter Toolbar -->
+      <div class="table-toolbar">
+        <div class="search-input-wrap">
+          <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+          <input type="text" id="searchToursInput" class="form-input search-input" placeholder="Nach Kunde oder Tour suchen...">
+        </div>
+        <select id="sortToursSelect" class="form-select sort-select">
+          <option value="date-desc">Neueste zuerst</option>
+          <option value="date-asc">Älteste zuerst</option>
+          <option value="cost-desc">Höchster Betrag</option>
+          <option value="cost-asc">Niedrigster Betrag</option>
+          <option value="customer-asc">Kunde (A-Z)</option>
+        </select>
+      </div>
+
+      <!-- Tours List -->
+      <div class="tours-list-container" id="toursListContainer">
+        <!-- Injected via JS -->
       </div>
     </section>
 
-    <!-- ==================== VIEW 3: PROFILES ==================== -->
+    <!-- ==================== VIEW 3: ORTE & ROUTEN ==================== -->
+    <section class="view" id="view-routes">
+      <div class="view-header">
+        <div>
+          <h1 class="view-title">Gespeicherte Orte & Routen</h1>
+          <p class="view-subtitle">Wiederkehrende Ziele, Kunden und Standardstrecken für sekundenschnelle Auswahl</p>
+        </div>
+      </div>
+
+      <!-- Section: Gespeicherte Orte -->
+      <div class="clean-card">
+        <div class="clean-card__header">
+          <div class="clean-card__title">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            <span>Häufige Orte & Kundenstandorte</span>
+          </div>
+          <button type="button" class="btn-primary btn-sm" id="btnOpenAddPlaceModal">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            <span>Ort hinzufügen</span>
+          </button>
+        </div>
+
+        <div class="places-grid" id="placesGridContainer">
+          <!-- Injected via JS -->
+        </div>
+      </div>
+
+      <!-- Section: Gespeicherte Routen -->
+      <div class="clean-card" style="margin-top: 16px;">
+        <div class="clean-card__header">
+          <div class="clean-card__title">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>
+            <span>Standard-Touren & Routen</span>
+          </div>
+          <button type="button" class="btn-primary btn-sm" id="btnOpenAddRouteModal">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            <span>Route speichern</span>
+          </button>
+        </div>
+
+        <div class="routes-grid" id="routesGridContainer">
+          <!-- Injected via JS -->
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== VIEW 4: FAHRZEUGE (PROFILES) ==================== -->
     <section class="view" id="view-profiles">
-      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
-        <h1 class="section-title" style="margin-bottom: 0;">Vehicle Profiles</h1>
-        <button type="button" class="btn-primary btn-small" id="btnOpenNewProfileModal" style="margin-top: 0;">
-          + New Profile
+      <div class="view-header">
+        <div>
+          <h1 class="view-title">Fahrzeug-Profile</h1>
+          <p class="view-subtitle">Verbrauch, Kilometerpauschalen und Standard-Staffeln pro Fahrzeug</p>
+        </div>
+        <button type="button" class="btn-primary btn-sm" id="btnOpenNewProfileModal">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          <span>Neues Fahrzeug</span>
         </button>
       </div>
-      <p class="section-subtitle">Save vehicle presets and rates for instant calculation</p>
 
       <div class="profiles-grid" id="profilesListContainer">
-        <!-- Injected via JavaScript -->
+        <!-- Injected via JS -->
       </div>
     </section>
 
-    <!-- ==================== VIEW 4: SETTINGS ==================== -->
+    <!-- ==================== VIEW 5: EINSTELLUNGEN ==================== -->
     <section class="view" id="view-settings">
-      <h1 class="section-title">Settings & APIs</h1>
-      <p class="section-subtitle">Configure external services, defaults and data preferences</p>
-
-      <!-- APIs Group -->
-      <div class="settings-group">
-        <div class="settings-group__title">External Synchronizations</div>
-
-        <div class="settings-item">
-          <div class="settings-item__left">
-            <span class="settings-item__icon">🗺️</span>
-            <div>
-              <div class="settings-item__label">Google Maps API</div>
-              <div class="settings-item__sublabel">For addresses & driving distance</div>
-            </div>
-          </div>
-          <div class="settings-item__right">
-            <span class="api-key-status missing" id="googleMapsStatus">Not configured</span>
-          </div>
-        </div>
-
-        <div class="glass-card" style="margin-top: 6px; border-radius: 4px 4px var(--radius-md) var(--radius-md); padding: 14px;">
-          <label class="form-label" for="settingGoogleMapsKey">Google Maps API Key</label>
-          <div class="form-input-group">
-            <input type="password" id="settingGoogleMapsKey" class="form-input" placeholder="Paste your AIzaSy... key">
-            <button type="button" class="form-input-group__btn" id="btnToggleMapsKeyVisibility">👁️</button>
-          </div>
-          <div style="display: flex; gap: 8px; margin-top: 10px;">
-            <button type="button" class="btn-secondary btn-small" id="btnSaveMapsKey">Save Key</button>
-            <button type="button" class="btn-secondary btn-small" id="btnClearMapsKey">Clear</button>
-          </div>
-
-          <!-- Google Maps Setup Guide -->
-          <details class="api-guide" id="googleMapsGuide">
-            <summary class="api-guide__toggle">📖 How to get a Google Maps API Key</summary>
-            <div class="api-guide__content">
-              <div class="api-guide__step"><span class="api-guide__step-num">1</span> Go to the <a href="https://console.cloud.google.com/apis/credentials" target="_blank" rel="noopener">Google Cloud Console → Credentials</a></div>
-              <div class="api-guide__step"><span class="api-guide__step-num">2</span> Create a project (or select an existing one)</div>
-              <div class="api-guide__step"><span class="api-guide__step-num">3</span> Click <strong>"+ Create Credentials"</strong> → <strong>"API Key"</strong></div>
-              <div class="api-guide__step"><span class="api-guide__step-num">4</span> Enable the <strong>Distance Matrix API</strong> and <strong>Places API</strong> in <a href="https://console.cloud.google.com/apis/library" target="_blank" rel="noopener">API Library</a></div>
-              <div class="api-guide__step"><span class="api-guide__step-num">5</span> Copy the key and paste it above</div>
-              <div class="api-guide__note">💡 Google gives $200/month free credit (~40,000 route lookups). No charges unless you exceed that.</div>
-              <div class="api-guide__note">ℹ️ <strong>Optional:</strong> The app already uses free open routing (OSRM) without this key. Google Maps provides more accurate results for complex addresses.</div>
-            </div>
-          </details>
-        </div>
-
-        <div class="settings-item" style="margin-top: 12px;">
-          <div class="settings-item__left">
-            <span class="settings-item__icon">⛽</span>
-            <div>
-              <div class="settings-item__label">Tankerkönig API</div>
-              <div class="settings-item__sublabel">Real-time gas station prices in Germany</div>
-            </div>
-          </div>
-          <div class="settings-item__right">
-            <span class="api-key-status missing" id="tankerkoenigStatus">Demo mode</span>
-          </div>
-        </div>
-
-        <div class="glass-card" style="margin-top: 6px; border-radius: 4px 4px var(--radius-md) var(--radius-md); padding: 14px;">
-          <label class="form-label" for="settingTankerkoenigKey">Tankerkönig API Key (UUID)</label>
-          <div class="form-input-group">
-            <input type="password" id="settingTankerkoenigKey" class="form-input" placeholder="e.g. 00000000-0000-0000-0000-000000000002">
-            <button type="button" class="form-input-group__btn" id="btnToggleTankerKeyVisibility">👁️</button>
-          </div>
-          <div style="display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap;">
-            <button type="button" class="btn-secondary btn-small" id="btnSaveTankerKey">Save Key</button>
-            <button type="button" class="btn-secondary btn-small" id="btnClearTankerKey">Clear</button>
-            <button type="button" class="btn-secondary btn-small" id="btnUseDemoTankerKey" style="margin-left: auto; border-color: rgba(0, 232, 143, 0.3); color: var(--accent-secondary);">⚡ Use Demo Key</button>
-          </div>
-
-          <!-- Tankerkönig Setup Guide -->
-          <details class="api-guide" id="tankerkoenigGuide">
-            <summary class="api-guide__toggle">📖 How to get a Tankerkönig API Key</summary>
-            <div class="api-guide__content">
-              <div class="api-guide__step"><span class="api-guide__step-num">1</span> Go to <a href="https://creativecommons.tankerkoenig.de/" target="_blank" rel="noopener">creativecommons.tankerkoenig.de</a></div>
-              <div class="api-guide__step"><span class="api-guide__step-num">2</span> Click <strong>"API-Key anfordern"</strong> (Request API Key)</div>
-              <div class="api-guide__step"><span class="api-guide__step-num">3</span> Enter your email and a short usage description</div>
-              <div class="api-guide__step"><span class="api-guide__step-num">4</span> You'll receive a UUID key by email — paste it above</div>
-              <div class="api-guide__note">💡 100% free, no credit card needed. Or click <strong>"Use Demo Key"</strong> above to try it instantly with the public test key.</div>
-            </div>
-          </details>
+      <div class="view-header">
+        <div>
+          <h1 class="view-title">Einstellungen</h1>
+          <p class="view-subtitle">Optionale Dienste, Buchhaltungs-Präferenzen und Datensicherung</p>
         </div>
       </div>
 
       <!-- App Preferences -->
-      <div class="settings-group">
-        <div class="settings-group__title">Preferences</div>
-
-        <div class="settings-item">
-          <div class="settings-item__left">
-            <span class="settings-item__icon">⛽</span>
-            <div>
-              <div class="settings-item__label">Default Fuel Type</div>
-              <div class="settings-item__sublabel">Preferred fuel grade for radar</div>
-            </div>
+      <div class="clean-card">
+        <div class="clean-card__header">
+          <div class="clean-card__title">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+            <span>Allgemein</span>
           </div>
-          <div class="settings-item__right" style="width: 140px;">
-            <select id="prefFuelType" class="form-select" style="height: 38px; font-size: 0.85rem;">
-              <option value="e5">Super E5</option>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group flex-1">
+            <label class="form-label" for="prefCurrency">Währungssymbol</label>
+            <select id="prefCurrency" class="form-select">
+              <option value="€">EUR (€)</option>
+              <option value="CHF">CHF</option>
+              <option value="$">USD ($)</option>
+              <option value="£">GBP (£)</option>
+            </select>
+          </div>
+
+          <div class="form-group flex-1">
+            <label class="form-label" for="prefFuelType">Bevorzugte Kraftstoffsorte</label>
+            <select id="prefFuelType" class="form-select">
               <option value="e10">Super E10</option>
+              <option value="e5">Super E5</option>
               <option value="diesel">Diesel</option>
             </select>
           </div>
         </div>
+      </div>
 
-        <div class="settings-item">
-          <div class="settings-item__left">
-            <span class="settings-item__icon">💶</span>
-            <div>
-              <div class="settings-item__label">Currency</div>
-              <div class="settings-item__sublabel">Symbol used in calculations</div>
+      <!-- Collapsible Card: Externe APIs (Google Maps & Tankerkönig) -->
+      <div class="clean-card collapsible-card" id="cardApis">
+        <div class="clean-card__header collapsible-trigger" id="apiHeaderTrigger" role="button" tabindex="0">
+          <div class="clean-card__title">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+            <span>APIs & Externe Schnittstellen (Optional)</span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <span class="badge-subtle" id="apiStatusSummaryBadge">Konfigurieren</span>
+            <svg class="chevron-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>
+          </div>
+        </div>
+
+        <div class="collapsible-body" id="apiCollapsibleBody">
+          <p class="form-subtext" style="margin-top: 10px; margin-bottom: 16px;">
+            Die App funktioniert standardmäßig vollständig ohne eigene API-Keys (über freies OpenStreetMap-Routing und Durchschnittspreise). Optional kannst du hier eigene Schlüssel hinterlegen.
+          </p>
+
+          <!-- Google Maps API -->
+          <div class="api-card">
+            <div class="api-card__header">
+              <span class="api-card__name">Google Maps Distance Matrix API</span>
+              <span class="api-key-status missing" id="googleMapsStatus">Nicht konfiguriert</span>
+            </div>
+            <div class="form-input-group" style="margin-top: 8px;">
+              <input type="password" id="settingGoogleMapsKey" class="form-input" placeholder="Google Cloud API-Key (AIzaSy...)">
+              <button type="button" class="form-input-group__btn" id="btnToggleMapsKeyVisibility">👁️</button>
+            </div>
+            <div style="display: flex; gap: 8px; margin-top: 8px;">
+              <button type="button" class="btn-secondary btn-sm" id="btnSaveMapsKey">Speichern</button>
+              <button type="button" class="btn-secondary btn-sm" id="btnClearMapsKey">Löschen</button>
             </div>
           </div>
-          <div class="settings-item__right" style="width: 100px;">
-            <select id="prefCurrency" class="form-select" style="height: 38px; font-size: 0.85rem;">
-              <option value="€">EUR (€)</option>
-              <option value="$">USD ($)</option>
-              <option value="CHF">CHF</option>
-              <option value="£">GBP (£)</option>
-            </select>
+
+          <!-- Tankerkönig API -->
+          <div class="api-card" style="margin-top: 16px;">
+            <div class="api-card__header">
+              <span class="api-card__name">Tankerkönig API (Echtzeit-Spritpreise)</span>
+              <span class="api-key-status missing" id="tankerkoenigStatus">Demo-Modus</span>
+            </div>
+            <div class="form-input-group" style="margin-top: 8px;">
+              <input type="password" id="settingTankerkoenigKey" class="form-input" placeholder="Tankerkönig UUID Key">
+              <button type="button" class="form-input-group__btn" id="btnToggleTankerKeyVisibility">👁️</button>
+            </div>
+            <div style="display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap;">
+              <button type="button" class="btn-secondary btn-sm" id="btnSaveTankerKey">Speichern</button>
+              <button type="button" class="btn-secondary btn-sm" id="btnClearTankerKey">Löschen</button>
+              <button type="button" class="btn-secondary btn-sm" id="btnUseDemoTankerKey" style="margin-left: auto; color: var(--accent-emerald);">⚡ Demo-Key nutzen</button>
+            </div>
           </div>
         </div>
       </div>
 
-      <!-- Data Management -->
-      <div class="settings-group">
-        <div class="settings-group__title">Data Management</div>
-        <button type="button" class="btn-secondary btn-danger" id="btnResetAllData">
-          🗑️ Reset All Profiles & Settings
-        </button>
+      <!-- Data Backup & Export -->
+      <div class="clean-card">
+        <div class="clean-card__header">
+          <div class="clean-card__title">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            <span>Datensicherung & Fahrtenbuch-Export</span>
+          </div>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 8px;">
+          <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+            <button type="button" class="btn-secondary btn-sm" id="btnExportAllJson">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              <span>Vollständiges Backup herunterladen (JSON)</span>
+            </button>
+            <label class="btn-secondary btn-sm" style="cursor: pointer; margin-bottom: 0;">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+              <span>Backup wiederherstellen</span>
+              <input type="file" id="fileImportJson" accept=".json" style="display: none;">
+            </label>
+          </div>
+
+          <div style="margin-top: 14px; border-top: 1px solid var(--border-subtle); padding-top: 14px;">
+            <button type="button" class="btn-secondary btn-danger btn-sm" id="btnResetAllData">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+              <span>Alle lokalen Daten zurücksetzen</span>
+            </button>
+          </div>
+        </div>
       </div>
 
-      </div>
-
-      <!-- App Information -->
+      <!-- App Info -->
       <div class="app-info">
-        <p><strong>Travel Cost Calculator PWA v1.0</strong></p>
-        <p>Progressive Web Application for Android & Desktop</p>
-        <p>Data stored locally in your browser sandbox.</p>
-      </div>
-    </section>
-
-    <!-- ==================== VIEW 5: SAVED CALCULATIONS ==================== -->
-    <section class="view" id="view-saved">
-      <h1 class="section-title">Saved Calculations</h1>
-      <p class="section-subtitle">History of your trips and expenses</p>
-
-      <div class="glass-card" style="margin-bottom: 20px;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-          <div class="glass-card__title" style="margin-bottom: 0;">
-            <div class="glass-card__title-icon flat">🗂️</div>
-            <span>History</span>
-          </div>
-          <select id="sortSavedSelect" class="form-select" style="width: auto; height: 32px; padding: 0 10px; font-size: 0.8rem;">
-            <option value="date-desc">Newest First</option>
-            <option value="date-asc">Oldest First</option>
-            <option value="name-asc">Name (A-Z)</option>
-            <option value="name-desc">Name (Z-A)</option>
-          </select>
-        </div>
-
-        <div id="savedCalculationsList">
-          <!-- Saved calculations will be injected here -->
-        </div>
+        <p><strong>TravelCalc PWA v2.0</strong> — Minimalistisches Fahrtenbuch & Fahrtkosten-Abrechnung</p>
+        <p>Alle Daten bleiben 100% lokal in deinem Browser gespeichert.</p>
       </div>
     </section>
 
@@ -470,146 +605,200 @@
   <nav class="bottom-nav">
     <button type="button" class="bottom-nav__item active" data-view="calculator" id="navCalculator">
       <svg viewBox="0 0 24 24"><rect x="4" y="2" width="16" height="20" rx="3"></rect><line x1="8" y1="6" x2="16" y2="6"></line><line x1="16" y1="14" x2="16" y2="18"></line><line x1="8" y1="10" x2="8.01" y2="10"></line><line x1="12" y1="10" x2="12.01" y2="10"></line><line x1="16" y1="10" x2="16.01" y2="10"></line><line x1="8" y1="14" x2="8.01" y2="14"></line><line x1="12" y1="14" x2="12.01" y2="14"></line><line x1="8" y1="18" x2="8.01" y2="18"></line><line x1="12" y1="18" x2="12.01" y2="18"></line></svg>
-      <span>Calculate</span>
+      <span>Rechner</span>
     </button>
-    <button type="button" class="bottom-nav__item" data-view="route" id="navRoute">
+    <button type="button" class="bottom-nav__item" data-view="accounting" id="navAccounting">
+      <svg viewBox="0 0 24 24"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/><path d="M6 6h10M6 10h10M6 14h6"/></svg>
+      <span>Fahrtenbuch</span>
+    </button>
+    <button type="button" class="bottom-nav__item" data-view="routes" id="navRoutes">
       <svg viewBox="0 0 24 24"><polygon points="3 11 22 2 13 21 11 13 3 11"></polygon></svg>
-      <span>Route</span>
+      <span>Orte & Routen</span>
     </button>
     <button type="button" class="bottom-nav__item" data-view="profiles" id="navProfiles">
-      <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-      <span>Profiles</span>
-    </button>
-    <button type="button" class="bottom-nav__item" data-view="saved" id="navSaved">
-      <svg viewBox="0 0 24 24"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg>
-      <span>Saved</span>
+      <svg viewBox="0 0 24 24"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/></svg>
+      <span>Fahrzeuge</span>
     </button>
     <button type="button" class="bottom-nav__item" data-view="settings" id="navSettings">
       <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
-      <span>Settings</span>
+      <span>Einstellungen</span>
     </button>
   </nav>
 
-  <!-- ==================== MODAL: PROFILE CREATE/EDIT ==================== -->
-  <div class="modal-overlay" id="profileModalOverlay">
+  <!-- ==================== MODALS ==================== -->
+
+  <!-- MODAL: EDIT/SAVE TOUR -->
+  <div class="modal-overlay" id="tourModalOverlay">
     <div class="modal">
       <div class="modal__handle"></div>
-      <h2 class="modal__title" id="profileModalTitle">Add Vehicle Profile</h2>
-
-      <input type="hidden" id="modalProfileId">
+      <h2 class="modal__title" id="tourModalTitle">Tour bearbeiten</h2>
+      
+      <input type="hidden" id="modalTourId">
 
       <div class="form-group">
-        <label class="form-label" for="modalProfileName">Profile Name</label>
-        <input type="text" id="modalProfileName" class="form-input" placeholder="e.g. My Commuter Car">
+        <label class="form-label" for="modalTourCustomer">Kunde / Schüler / Firma</label>
+        <input type="text" id="modalTourCustomer" class="form-input" placeholder="z. B. Max Mustermann">
       </div>
 
       <div class="form-group">
-        <label class="form-label" for="modalProfileVehicle">Vehicle Model / Description</label>
-        <input type="text" id="modalProfileVehicle" class="form-input" placeholder="e.g. VW Golf 2.0 TDI">
+        <label class="form-label" for="modalTourName">Tourbezeichnung / Anlass</label>
+        <input type="text" id="modalTourName" class="form-input" placeholder="z. B. Vor-Ort-Nachhilfe Mathe">
       </div>
 
       <div class="form-row">
-        <div class="form-group">
-          <label class="form-label" for="modalProfileConsumption">Consumption (L/100km)</label>
-          <input type="number" id="modalProfileConsumption" class="form-input" placeholder="6.2" step="0.1" min="0" inputmode="decimal">
+        <div class="form-group flex-1">
+          <label class="form-label" for="modalTourDate">Datum</label>
+          <input type="date" id="modalTourDate" class="form-input">
         </div>
+        <div class="form-group flex-1">
+          <label class="form-label" for="modalTourDistance">Strecke (km)</label>
+          <input type="number" id="modalTourDistance" class="form-input" step="0.1" min="0">
+        </div>
+      </div>
 
-        <div class="form-group">
-          <label class="form-label" for="modalProfileFuelType">Fuel Type</label>
+      <div class="modal__footer">
+        <button type="button" class="btn-secondary" id="btnCancelTourModal">Abbrechen</button>
+        <button type="button" class="btn-primary" id="btnSaveTourModal">Speichern</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: ADD/EDIT PLACE (ORT) -->
+  <div class="modal-overlay" id="placeModalOverlay">
+    <div class="modal">
+      <div class="modal__handle"></div>
+      <h2 class="modal__title" id="placeModalTitle">Ort speichern</h2>
+      
+      <input type="hidden" id="modalPlaceId">
+
+      <div class="form-group">
+        <label class="form-label" for="modalPlaceName">Bezeichnung</label>
+        <input type="text" id="modalPlaceName" class="form-input" placeholder="z. B. Zuhause, Büro, Schüler Max...">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="modalPlaceAddress">Adresse / Stadt</label>
+        <input type="text" id="modalPlaceAddress" class="form-input" placeholder="z. B. Dietzenbach oder Offenbacher Str. 12">
+      </div>
+
+      <div class="modal__footer">
+        <button type="button" class="btn-secondary" id="btnCancelPlaceModal">Abbrechen</button>
+        <button type="button" class="btn-primary" id="btnSavePlaceModal">Speichern</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: ADD/EDIT SAVED ROUTE -->
+  <div class="modal-overlay" id="routeModalOverlay">
+    <div class="modal">
+      <div class="modal__handle"></div>
+      <h2 class="modal__title" id="routeModalTitle">Route speichern</h2>
+      
+      <input type="hidden" id="modalRouteId">
+
+      <div class="form-group">
+        <label class="form-label" for="modalRouteName">Routenname</label>
+        <input type="text" id="modalRouteName" class="form-input" placeholder="z. B. Zuhause ➔ Max Mustermann">
+      </div>
+
+      <div class="form-row">
+        <div class="form-group flex-1">
+          <label class="form-label" for="modalRouteCustomer">Kunde / Zuordnung</label>
+          <input type="text" id="modalRouteCustomer" class="form-input" placeholder="z. B. Max Mustermann">
+        </div>
+        <div class="form-group flex-1">
+          <label class="form-label" for="modalRouteDistance">Distanz (einfach in km)</label>
+          <input type="number" id="modalRouteDistance" class="form-input" placeholder="18.5" step="0.1" min="0">
+        </div>
+      </div>
+
+      <div class="toggle-row" style="margin-bottom: 14px;">
+        <div class="toggle-row__label">Standardmäßig als Hin- & Rückfahrt berechnen</div>
+        <label class="toggle-switch">
+          <input type="checkbox" id="modalRouteRoundTrip" checked>
+          <span class="toggle-switch__slider"></span>
+        </label>
+      </div>
+
+      <div class="modal__footer">
+        <button type="button" class="btn-secondary" id="btnCancelRouteModal">Abbrechen</button>
+        <button type="button" class="btn-primary" id="btnSaveRouteModal">Route speichern</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: VEHICLE PROFILE -->
+  <div class="modal-overlay" id="profileModalOverlay">
+    <div class="modal">
+      <div class="modal__handle"></div>
+      <h2 class="modal__title" id="profileModalTitle">Fahrzeug-Profil anlegen</h2>
+
+      <input type="hidden" id="modalProfileId">
+
+      <div class="form-row">
+        <div class="form-group flex-1">
+          <label class="form-label" for="modalProfileName">Profilname</label>
+          <input type="text" id="modalProfileName" class="form-input" placeholder="z. B. Mein Hauptwagen">
+        </div>
+        <div class="form-group flex-1">
+          <label class="form-label" for="modalProfileVehicle">Fahrzeugmodell</label>
+          <input type="text" id="modalProfileVehicle" class="form-input" placeholder="z. B. VW Golf 2.0 TDI">
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group flex-1">
+          <label class="form-label" for="modalProfileConsumption">Verbrauch (L/100km)</label>
+          <input type="number" id="modalProfileConsumption" class="form-input" placeholder="6.2" step="0.1" min="0">
+        </div>
+        <div class="form-group flex-1">
+          <label class="form-label" for="modalProfileFuelType">Kraftstoffart</label>
           <select id="modalProfileFuelType" class="form-select">
-            <option value="e5">Super E5</option>
-            <option value="e10">Super E10</option>
             <option value="diesel">Diesel</option>
+            <option value="e10">Super E10</option>
+            <option value="e5">Super E5</option>
           </select>
         </div>
       </div>
 
       <div class="form-group">
-        <label class="form-label" for="modalProfileCostPerKm">Cost Per Kilometer (€/km)</label>
-        <input type="number" id="modalProfileCostPerKm" class="form-input" placeholder="0.30" step="0.01" min="0" inputmode="decimal">
-      </div>
-
-      <div class="form-row">
-        <div class="form-group">
-          <label class="form-label" for="modalProfileFlatThreshold">Flat Rate Min (km)</label>
-          <input type="number" id="modalProfileFlatThreshold" class="form-input" placeholder="50" step="1" min="0" inputmode="numeric">
-        </div>
-
-        <div class="form-group">
-          <label class="form-label" for="modalProfileFlatAmount">Flat Rate Surcharge (€)</label>
-          <input type="number" id="modalProfileFlatAmount" class="form-input" placeholder="15.00" step="0.5" min="0" inputmode="decimal">
-        </div>
+        <label class="form-label" for="modalProfileCostPerKm">Standard Kilometerpauschale (€/km)</label>
+        <input type="number" id="modalProfileCostPerKm" class="form-input" placeholder="0.30" step="0.01" min="0">
       </div>
 
       <div class="modal__footer">
-        <button type="button" class="btn-secondary" id="btnCancelProfileModal">Cancel</button>
-        <button type="button" class="btn-primary" id="btnSaveProfileModal">Save Profile</button>
+        <button type="button" class="btn-secondary" id="btnCancelProfileModal">Abbrechen</button>
+        <button type="button" class="btn-primary" id="btnSaveProfileModal">Speichern</button>
       </div>
     </div>
   </div>
 
-  <!-- ==================== MODAL: SAVE/EDIT CALCULATION ==================== -->
-  <div class="modal-overlay" id="saveCalcModalOverlay">
-    <div class="modal">
-      <div class="modal__handle"></div>
-      <h2 class="modal__title" id="saveCalcModalTitle">Save Calculation</h2>
-      
-      <input type="hidden" id="modalCalcId">
-
-      <div class="form-group">
-        <label class="form-label" for="modalCalcName">Calculation Name</label>
-        <input type="text" id="modalCalcName" class="form-input" placeholder="e.g. Summer Road Trip">
-      </div>
-
-      <div class="form-group">
-        <label class="form-label" for="modalCalcDate">Date</label>
-        <input type="date" id="modalCalcDate" class="form-input">
-      </div>
-
-      <div class="modal__footer">
-        <button type="button" class="btn-secondary" id="btnCancelCalcModal">Cancel</button>
-        <button type="button" class="btn-primary" id="btnConfirmSaveCalc">Save</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- ==================== MODAL: NEARBY GAS STATIONS ==================== -->
+  <!-- MODAL: NEARBY GAS STATIONS -->
   <div class="modal-overlay" id="stationsModalOverlay">
     <div class="modal">
       <div class="modal__handle"></div>
-      <h2 class="modal__title">Nearby Gas Stations & Prices</h2>
+      <h2 class="modal__title">Tankstellen & Spritpreise in der Nähe</h2>
       <p style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 12px;">
-        Tap any station to adopt its current price into your calculation:
+        Klicke auf eine Tankstelle, um ihren aktuellen Literpreis direkt in den Rechner zu übernehmen:
       </p>
 
       <div id="stationsListContainer" class="station-list">
-        <!-- Stations injected here -->
+        <!-- Injected via JS -->
       </div>
 
       <div class="modal__footer">
-        <button type="button" class="btn-secondary" id="btnCloseStationsModal">Close</button>
+        <button type="button" class="btn-secondary" id="btnCloseStationsModal">Schließen</button>
       </div>
     </div>
   </div>
 
-  <!-- ==================== PRINT CONTAINER ==================== -->
+  <!-- PRINT CONTAINER FOR CLEAN PDF / PRINT REPORT -->
   <div id="printContainer" class="print-only"></div>
 
-  <!-- ==================== TOAST ==================== -->
+  <!-- TOAST NOTIFICATION -->
   <div class="toast" id="appToast">
     <span id="toastIcon">✓</span>
-    <span id="toastMessage">Action completed</span>
-  </div>
-
-  <!-- ==================== INSTALL BANNER ==================== -->
-  <div class="install-banner" id="installBanner">
-    <div class="install-banner__icon">📱</div>
-    <div class="install-banner__text">
-      <div class="install-banner__title">Install TravelCalc App</div>
-      <div class="install-banner__subtitle">Add to Home Screen for fast offline access</div>
-    </div>
-    <button type="button" class="install-banner__install" id="btnInstallPwa">Install</button>
-    <button type="button" class="install-banner__close" id="btnCloseInstallBanner">&times;</button>
+    <span id="toastMessage">Aktion erfolgreich</span>
   </div>
 
   <!-- Application Logic -->
