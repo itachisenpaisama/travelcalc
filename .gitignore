@@ -1,0 +1,7 @@
+*.bak
+*.bak_autonomous
+.DS_Store
+Thumbs.db
+GetToKnow/
+Nutrients/
+Schema/

@@ -336,7 +336,49 @@
     applyLanguageToDOM();
     applyActiveProfileToCalc();
     renderAllViews();
+    handleUrlParams();
     calculateCosts(false);
+  }
+
+  function handleUrlParams() {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const studentId = params.get('studentId');
+      const nameParam = params.get('name');
+      const destParam = params.get('dest');
+      const distParam = params.get('dist');
+
+      if (studentId && window.MatheDB && MatheDB.Students) {
+        const student = MatheDB.Students.getById(studentId);
+        if (student) {
+          if (elements.inputCustomer) elements.inputCustomer.value = student.name;
+          if (elements.inputTourName) elements.inputTourName.value = `Mathe-Nachhilfe ${student.name}`;
+          if (student.address && elements.routeDestination) {
+            elements.routeDestination.value = student.address;
+          }
+          const crmBadge = document.getElementById('crmStudentBadge');
+          if (crmBadge) crmBadge.style.display = 'inline';
+          if (student.distanceKm && elements.inputDistanceOneWay) {
+            elements.inputDistanceOneWay.value = student.distanceKm;
+          }
+          calculateCosts(false);
+          return;
+        }
+      }
+
+      if (nameParam && elements.inputCustomer) {
+        elements.inputCustomer.value = decodeURIComponent(nameParam);
+        if (elements.inputTourName) elements.inputTourName.value = `Mathe-Nachhilfe ${decodeURIComponent(nameParam)}`;
+      }
+      if (destParam && elements.routeDestination) {
+        elements.routeDestination.value = decodeURIComponent(destParam);
+      }
+      if (distParam && elements.inputDistanceOneWay) {
+        elements.inputDistanceOneWay.value = distParam;
+      }
+    } catch (err) {
+      console.warn('URL params parsing notice:', err);
+    }
   }
 
   function cacheDom() {
